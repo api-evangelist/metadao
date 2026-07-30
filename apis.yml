@@ -1,8 +1,29 @@
 aid: metadao
+accessModel:
+  pricing: unknown
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Unknown
+  confidence: low
+  source:
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/metadao.png
 name: MetaDAO
-description: 'MetaDAO is a company surfaced as a portfolio company of paradigm and added to the API Evangelist
-  network as a stub for enrichment. Sector: crypto-tools. This profile is a lead awaiting the enrichment
-  pipeline.'
+description: >-
+  MetaDAO is a fundraising and governance platform for high-quality founders and
+  their communities, built on the Solana Futarchy protocol. It runs early fair
+  token launches (high-float ICOs) and market-driven ("futarchy") governance
+  where decision markets control treasury and intellectual property, with
+  performance-aligned insider token unlocks. For developers, MetaDAO operates the
+  public Futarchy DEX API — a CoinGecko-compatible, read-only market-data API at
+  market-api.metadao.fi that automatically discovers every DAO on the protocol
+  and exposes real-time pricing, trading volume, liquidity, and token supply.
+  Surfaced as a Paradigm portfolio company and enriched by the API Evangelist
+  pipeline from MetaDAO's own published documentation.
 url: https://raw.githubusercontent.com/api-evangelist/metadao/refs/heads/main/apis.yml
 x-type: company
 x-source: vc-portfolio
@@ -12,11 +33,74 @@ x-tier: stub
 x-tier-reason: portfolio-lead
 specificationVersion: '0.20'
 created: '2026-07-17'
-modified: '2026-07-17'
+modified: '2026-07-20'
 tags:
 - Company
 - Crypto Tools
-apis: []
+- DeFi
+- Solana
+- DEX
+- Governance
+- Market Data
+- Futarchy
+- API
+apis:
+- aid: metadao:metadao-meta-api
+  name: MetaDAO Meta API
+  description: API information and health
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - Meta
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-meta-api-openapi.yml
+  - type: Documentation
+    url: https://api-docs.metadao.fi/introduction
+  - type: APIReference
+    url: https://api-docs.metadao.fi/api-reference/overview
+- aid: metadao:metadao-supply-api
+  name: MetaDAO Supply API
+  description: Token supply breakdown and allocation
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - Supply
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-supply-api-openapi.yml
+  - type: Documentation
+    url: https://api-docs.metadao.fi/introduction
+  - type: APIReference
+    url: https://api-docs.metadao.fi/api-reference/overview
+- aid: metadao:metadao-tickers-api
+  name: MetaDAO Tickers API
+  description: DAO trading pairs, pricing, and volume
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - Tickers
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-tickers-api-openapi.yml
+  - type: Documentation
+    url: https://api-docs.metadao.fi/introduction
+  - type: APIReference
+    url: https://api-docs.metadao.fi/api-reference/overview
+- aid: metadao:metadao-volume-api
+  name: MetaDAO Volume API
+  description: Aggregate trading volume
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - Volume
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-volume-api-openapi.yml
+  - type: Documentation
+    url: https://api-docs.metadao.fi/introduction
+  - type: APIReference
+    url: https://api-docs.metadao.fi/api-reference/overview
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -25,3 +109,42 @@ maintainers:
 common:
 - type: Website
   url: https://metadao.fi
+- type: DeveloperPortal
+  url: https://api-docs.metadao.fi/introduction
+- type: Documentation
+  url: https://api-docs.metadao.fi/introduction
+- type: APIReference
+  url: https://api-docs.metadao.fi/api-reference/overview
+- type: GettingStarted
+  url: https://api-docs.metadao.fi/quickstart
+- type: GitHubOrganization
+  url: https://github.com/metaDAOproject
+- type: Authentication
+  url: authentication/metadao-authentication.yml
+- type: ErrorCatalog
+  url: errors/metadao-error-codes.yml
+- type: Lifecycle
+  url: lifecycle/metadao-lifecycle.yml
+- type: Conventions
+  url: conventions/metadao-conventions.yml
+- type: Conformance
+  url: conformance/metadao-conformance.yml
+- type: DomainSecurity
+  url: security/metadao-domain-security.yml
+- type: DataModel
+  url: data-model/metadao-data-model.yml
+- type: RateLimits
+  url: rate-limits/metadao-rate-limits.yml
+- type: MCPServer
+  url: mcp/metadao-mcp.yml
+- type: AgentSkill
+  url: skills/metadao-market-data.md
+- type: AgentSkill
+  url: skills/metadao-token-supply.md
+- type: LLMsTxt
+  url: llms/metadao-llms.txt
+x-enrichment:
+  date: '2026-07-20'
+  status: enriched
+  artifacts_added: 13
+  pass: local-v1
