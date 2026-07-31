@@ -1,0 +1,41 @@
+generated: '2026-07-20'
+method: searched
+source: https://api-docs.metadao.fi
+authentication:
+  style: none
+  detail: Public read-only API; no key/token required. See authentication/metadao-authentication.yml
+idempotency:
+  supported: false
+  detail: >-
+    All operations are read-only GET requests, so idempotency keys are not
+    applicable and none are documented.
+pagination:
+  supported: false
+  detail: >-
+    Collection endpoints (/api/tickers, /api/volume/aggregate) return the full
+    result set with no pagination parameters documented.
+field_expansion:
+  supported: false
+metadata:
+  supported: false
+request_tracing:
+  request_id_header: null
+  detail: No request-id / correlation header documented.
+versioning:
+  detail: Version reported in root response body; unversioned URLs. See lifecycle/metadao-lifecycle.yml
+error_envelope:
+  shape: '{ "error": "string" }'
+  format: simple-json
+  detail: Not RFC 9457. See errors/metadao-error-codes.yml
+rate_limiting:
+  limit: 60 requests per minute per IP
+  enforcement: HTTP 429 on exceed
+  headers: null
+  detail: >-
+    No documented rate-limit response headers (X-RateLimit-*); clients should
+    implement exponential backoff on 429.
+compatibility:
+  standard: CoinGecko DEX API specification
+  detail: >-
+    Ticker response shape and endpoint semantics follow CoinGecko's DEX API
+    spec for integration with price aggregators.

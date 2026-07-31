@@ -1,0 +1,40 @@
+generated: '2026-07-20'
+method: searched
+source: https://api-docs.metadao.fi/advanced/error-handling
+format: simple-json
+envelope:
+  shape: '{ "error": "Error message describing what went wrong" }'
+  field: error
+  note: >-
+    Errors do NOT use RFC 9457 application/problem+json. The category is carried
+    by the HTTP status code; the body carries a single human-readable "error"
+    string.
+errors:
+  - status: 200
+    title: OK
+    meaning: Request successful, data returned
+  - status: 400
+    title: Bad Request
+    meaning: The request was malformed or contains invalid parameters
+    causes: [missing required query parameters, invalid ticker_id format, malformed request body]
+  - status: 404
+    title: Not Found
+    meaning: The requested resource does not exist
+    causes: [invalid endpoint path, ticker not found, DAO does not exist]
+  - status: 429
+    title: Too Many Requests
+    meaning: Rate limit exceeded
+    remediation: >-
+      Limit is 60 requests per minute per IP. Wait until the next minute window;
+      implement retry with exponential backoff and cache responses.
+    example_body: '{ "error": "Rate limit exceeded. Please try again later." }'
+  - status: 500
+    title: Internal Server Error
+    meaning: An unexpected error occurred on the server
+    causes: [RPC connection issues, blockchain data unavailable, service temporarily down]
+  - status: 502
+    title: Bad Gateway
+    meaning: Upstream service (Solana RPC) is unavailable
+  - status: 503
+    title: Service Unavailable
+    meaning: API is temporarily unavailable (maintenance or overload)

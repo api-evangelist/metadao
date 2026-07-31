@@ -1,0 +1,28 @@
+generated: '2026-07-20'
+method: probed
+source: 'dig + openssl s_client + curl HEAD (manual probe)'
+hosts:
+  - host: metadao.fi
+    https: true
+    tls_issuer: "Let's Encrypt"
+    tls_not_after: '2026-09-20'
+    hsts: false
+    hsts_max_age: null
+    note: Behind rate limiting (HTTP 429 observed on automated GET); TLS handshake succeeded.
+  - host: market-api.metadao.fi
+    https: true
+    hsts: null
+    note: >-
+      Live public API host (GET /health returned 200 with a browser User-Agent).
+      Cloudflare-fronted; returns 403 to non-browser clients. TLS reachable.
+  - host: api-docs.metadao.fi
+    https: true
+    note: Documentation host (Mintlify); reachable over HTTPS.
+domains:
+  - domain: metadao.fi
+    dnssec: true
+    caa: []
+    spf: true
+    spf_record: 'v=spf1 include:_spf.google.com ~all'
+    dmarc: true
+    dmarc_policy: quarantine

@@ -1,0 +1,14 @@
+generated: '2026-07-20'
+method: searched
+source: https://api-docs.metadao.fi/advanced/error-handling
+rate_limits:
+  - scope: per-ip
+    limit_count: 60
+    window: 1m
+    enforcement: HTTP 429 Too Many Requests
+    reset: next minute window
+    headers: null
+    note: >-
+      Single global limit of 60 requests per minute per IP across all endpoints.
+      No documented X-RateLimit-* response headers; clients should implement
+      exponential backoff on 429 and cache responses.

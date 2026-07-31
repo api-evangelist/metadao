@@ -1,0 +1,20 @@
+{
+  "provider": "metadao",
+  "sources": [
+    "metadao-meta-api-openapi.yml",
+    "metadao-supply-api-openapi.yml",
+    "metadao-tickers-api-openapi.yml",
+    "metadao-volume-api-openapi.yml"
+  ],
+  "outputs": [
+    "metadao-meta-api-openapi.yml",
+    "metadao-supply-api-openapi.yml",
+    "metadao-tickers-api-openapi.yml",
+    "metadao-volume-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}

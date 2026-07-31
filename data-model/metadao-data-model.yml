@@ -1,0 +1,53 @@
+generated: '2026-07-20'
+method: derived
+source: openapi/metadao-futarchy-dex-openapi.yml
+note: >-
+  Entity graph derived from the documented response shapes of the Futarchy DEX
+  API. Entities are keyed by Solana mint / DAO PublicKey addresses (there are no
+  provider-issued opaque IDs or id-prefixes).
+entities:
+  - name: Ticker
+    description: A CoinGecko-compatible trading pair for a DAO token against a quote token (typically USDC).
+    key: ticker_id
+    key_format: '{BASE_MINT}_{QUOTE_MINT}'
+    fields: [base_currency, target_currency, base_symbol, base_name, target_symbol, target_name, pool_id, last_price, base_volume, target_volume, liquidity_in_usd, bid, ask]
+  - name: DAO
+    description: A DAO discovered from the Futarchy protocol; identified by its on-chain address (pool_id on a ticker).
+    key: pool_id
+  - name: Token
+    description: An SPL token (base or quote) identified by its Solana mint address.
+    key: mint
+    fields: [mint, symbol, name, decimals]
+  - name: Supply
+    description: Supply breakdown for a launchpad token.
+    key: mint
+    fields: [totalSupply, circulatingSupply, teamPerformancePackage, futarchyAmmLiquidity, meteoraLpLiquidity]
+  - name: VolumeAggregate
+    description: Aggregate trading volume across all DAOs with daily breakdown and per-token totals.
+    fields: [totalVolume, dailyBreakdown, tokens]
+relationships:
+  - from: Ticker
+    to: Token
+    type: belongs_to
+    via: base_currency
+    description: A ticker's base token.
+  - from: Ticker
+    to: Token
+    type: belongs_to
+    via: target_currency
+    description: A ticker's quote token (typically USDC).
+  - from: Ticker
+    to: DAO
+    type: belongs_to
+    via: pool_id
+    description: The DAO whose spot pool backs the ticker.
+  - from: Supply
+    to: Token
+    type: belongs_to
+    via: mint
+    description: Supply figures for a specific token mint.
+  - from: VolumeAggregate
+    to: Token
+    type: has_many
+    via: tokens
+    description: Per-token volume totals within the aggregate.

@@ -1,0 +1,24 @@
+generated: '2026-07-20'
+method: searched
+source: https://api-docs.metadao.fi/api-reference/overview
+versioning:
+  scheme: in-body
+  current: '1.0.0'
+  note: >-
+    The API reports its version in the root (GET /) response as "version".
+    No versioned URL path or version header is documented; the API surface is
+    unversioned at the URL level (CoinGecko DEX API compatible).
+  docs: https://api-docs.metadao.fi/api-reference/overview
+health_check:
+  endpoint: /health
+  url: https://market-api.metadao.fi/health
+  status_observed: 200
+deprecation:
+  policy_url: null
+  sunset_header: false
+  note: No deprecation policy or Sunset/Deprecation header support documented.
+sla:
+  url: null
+  uptime_target: null
+status_page: null
+deprecated_operations: []

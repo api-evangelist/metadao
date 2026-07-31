@@ -1,0 +1,17 @@
+# Futarchy DEX API
+
+## Docs
+
+- [Error Handling](https://api-docs.metadao.fi/advanced/error-handling.md): Understanding and handling API errors
+- [API Overview](https://api-docs.metadao.fi/api-reference/overview.md): Overview of the Futarchy CoinGecko-compatible DEX API
+- [GET /api/supply](https://api-docs.metadao.fi/api-reference/supply.md): Retrieve complete token supply breakdown with allocation details
+- [GET /api/tickers](https://api-docs.metadao.fi/api-reference/tickers.md): Retrieve all DAO tickers with pricing and volume information
+- [GET /api/volume/aggregate](https://api-docs.metadao.fi/api-reference/volume-aggregate.md): Retrieve aggregate trading volume with daily breakdown for all DAO tokens
+- [Price Calculation](https://api-docs.metadao.fi/concepts/pricing-methodology.md): Understanding how prices are calculated in the Futarchy DEX API
+- [Configuration](https://api-docs.metadao.fi/configuration.md): Configure your Futarchy DEX API instance
+- [Introduction](https://api-docs.metadao.fi/introduction.md): Welcome to the Futarchy DEX API - A CoinGecko-compatible API for the Futarchy protocol
+- [Quickstart](https://api-docs.metadao.fi/quickstart.md): Get started with the Futarchy DEX API in under 5 minutes
+
+## OpenAPI Specs
+
+- [openapi](https://api-docs.metadao.fi/api-reference/openapi.json)

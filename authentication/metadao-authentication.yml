@@ -1,0 +1,12 @@
+generated: '2026-07-20'
+method: searched
+source: https://api-docs.metadao.fi/quickstart
+docs: https://api-docs.metadao.fi/api-reference/overview
+summary:
+  types: [none]
+  note: >-
+    The MetaDAO Futarchy DEX API is a public, read-only API. No API key,
+    OAuth flow, or bearer token is required or documented. All endpoints are
+    open GET requests. Access is governed only by IP-based rate limiting
+    (60 requests per minute per IP).
+schemes: []

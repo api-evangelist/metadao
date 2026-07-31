@@ -1,0 +1,30 @@
+generated: '2026-07-20'
+method: searched
+source: https://api-docs.metadao.fi/api-reference/overview
+standards:
+  - id: coingecko-dex-api
+    conforms: true
+    evidence: >-
+      Docs state the API is "fully compatible with CoinGecko's DEX API
+      specification"; ticker fields (ticker_id, base_currency, target_currency,
+      last_price, base_volume, target_volume, liquidity_in_usd, bid, ask) match
+      the CoinGecko DEX ticker schema.
+  - id: oauth2
+    conforms: false
+    evidence: No authentication scheme; public read-only API.
+  - id: oidc
+    conforms: false
+  - id: rfc9457-problem-details
+    conforms: false
+    evidence: >-
+      Errors use a simple { "error": "string" } envelope, not
+      application/problem+json.
+  - id: rest
+    conforms: true
+    evidence: Resource-oriented GET endpoints returning JSON.
+  - id: pagination
+    conforms: false
+    evidence: Collection endpoints return full result sets; no pagination documented.
+  - id: idempotency
+    conforms: true
+    evidence: All operations are read-only GET requests (inherently idempotent).

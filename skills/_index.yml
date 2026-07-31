@@ -1,0 +1,11 @@
+generated: '2026-07-20'
+method: generated
+skills:
+  - file: metadao-market-data.md
+    name: Pull MetaDAO Futarchy market data
+    api: openapi/metadao-futarchy-dex-openapi.yml
+    operations: [getApiInfo, getTickers, getAggregateVolume]
+  - file: metadao-token-supply.md
+    name: Look up MetaDAO token supply
+    api: openapi/metadao-futarchy-dex-openapi.yml
+    operations: [getSupply, getTotalSupply, getCirculatingSupply]
