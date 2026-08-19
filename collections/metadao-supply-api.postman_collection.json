@@ -1,0 +1,580 @@
+{
+  "item": [
+    {
+      "id": "527b4cb8-60b7-4494-93e3-3cc884671139",
+      "name": "Supply",
+      "description": {
+        "content": "Token supply breakdown and allocation",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "71a359cf-d7d5-4e14-8b5f-394892a2f02f",
+          "name": "Complete supply breakdown with allocation details",
+          "request": {
+            "name": "Complete supply breakdown with allocation details",
+            "description": {
+              "content": "Returns complete supply information for a token, including circulating supply, team performance package, FutarchyAMM liquidity, and Meteora LP liquidity. For launchpad tokens, circulating supply excludes the team performance package but includes all liquidity.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "supply",
+                ":mintAddress"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "mintAddress",
+                  "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "d673ddca-bdb9-42c0-a239-86a9ea836f76",
+              "name": "Supply breakdown",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"result\": \"string\",\n  \"data\": {\n    \"mint\": \"string\",\n    \"totalSupply\": \"string\",\n    \"circulatingSupply\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "819d7ad0-e67d-4c79-b98d-c4580422add6",
+              "name": "The requested resource does not exist",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7e3db2fc-35bc-4f20-a6b0-5bcf1b2782a0",
+              "name": "Rate limit exceeded (60 requests per minute per IP)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "12077410-04da-46d0-a4f2-11625507bb6b",
+          "name": "Total supply only",
+          "request": {
+            "name": "Total supply only",
+            "description": {
+              "content": "Returns the total supply for a token as a formatted string.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "supply",
+                ":mintAddress",
+                "total"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "mintAddress",
+                  "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "2323ff38-0f5b-46da-b84e-8690f8598ffa",
+              "name": "Total supply",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress",
+                    "total"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"result\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7dd24349-3484-4c56-b82e-c8067a9269fd",
+              "name": "The requested resource does not exist",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress",
+                    "total"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "161be4e3-26dd-4e12-b13b-ef0dff2e80b2",
+              "name": "Rate limit exceeded (60 requests per minute per IP)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress",
+                    "total"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "ae6514d9-a1ca-48f1-b802-768b12f93e2e",
+          "name": "Circulating supply (excludes team performance package)",
+          "request": {
+            "name": "Circulating supply (excludes team performance package)",
+            "description": {
+              "content": "Returns the circulating supply for a token. Excludes the team performance package; includes FutarchyAMM and Meteora liquidity.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "supply",
+                ":mintAddress",
+                "circulating"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "mintAddress",
+                  "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "d03a9ae1-c320-4e75-8e0a-bc715b2f1ddb",
+              "name": "Circulating supply",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress",
+                    "circulating"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"result\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "182ebb28-bf19-4a4f-a577-c06c926732c6",
+              "name": "The requested resource does not exist",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress",
+                    "circulating"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "85e216b4-68a4-4e3f-8500-19e1ed00b8b6",
+              "name": "Rate limit exceeded (60 requests per minute per IP)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "supply",
+                    ":mintAddress",
+                    "circulating"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "mintAddress",
+                      "description": "(Required) The SPL token mint address (Solana PublicKey)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://market-api.metadao.fi",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "e7dcff6a-09eb-41bc-a810-1610b7e737c9",
+    "name": "MetaDAO Futarchy DEX Meta Supply API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "CoinGecko-compatible DEX API for the MetaDAO Futarchy protocol on Solana. It automatically discovers and aggregates all DAOs from the Futarchy protocol and exposes real-time pricing, trading volume (derived from protocol fees), liquidity, and token supply information. The API is public and read-only, requires no authentication, and is rate limited to 60 requests per minute per IP. Prices are calculated from on-chain spot pool reserves only (not conditional/futarchy markets). This OpenAPI description was generated by the API Evangelist enrichment pipeline from the provider's published API documentation at https://api-docs.metadao.fi (the provider does not publish its own OpenAPI; the openapi.json served by the docs site is the default Mintlify sample). Endpoints, parameters, and response fields are transcribed faithfully from those docs.",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "item": [
+    {
+      "id": "3ec20d71-52ac-4deb-822b-deac2cec0d9f",
+      "name": "Meta",
+      "description": {
+        "content": "API information and health",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "084fdd1d-e628-410a-b022-1cb3a894dc3c",
+          "name": "API information and available endpoints",
+          "request": {
+            "name": "API information and available endpoints",
+            "description": {
+              "content": "Returns API name, version, documentation link, and the map of available endpoints.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                ""
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "e3c5e365-4d94-43d5-a2a6-c86ae412b1bc",
+              "name": "API information",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    ""
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"name\": \"string\",\n  \"version\": \"string\",\n  \"documentation\": \"string\",\n  \"endpoints\": {\n    \"key_0\": \"string\",\n    \"key_1\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "014793a1-eb45-4a25-8cca-e0079edec19b",
+          "name": "Health check endpoint for monitoring",
+          "request": {
+            "name": "Health check endpoint for monitoring",
+            "description": {
+              "content": "Returns service health status.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "health"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "9b0a254c-4417-46de-b961-88baf8a02163",
+              "name": "Service healthy",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "health"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://market-api.metadao.fi",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "6dbfbbea-aac7-4bbb-8d69-b59c3e71c911",
+    "name": "MetaDAO Futarchy DEX Meta API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "CoinGecko-compatible DEX API for the MetaDAO Futarchy protocol on Solana. It automatically discovers and aggregates all DAOs from the Futarchy protocol and exposes real-time pricing, trading volume (derived from protocol fees), liquidity, and token supply information. The API is public and read-only, requires no authentication, and is rate limited to 60 requests per minute per IP. Prices are calculated from on-chain spot pool reserves only (not conditional/futarchy markets). This OpenAPI description was generated by the API Evangelist enrichment pipeline from the provider's published API documentation at https://api-docs.metadao.fi (the provider does not publish its own OpenAPI; the openapi.json served by the docs site is the default Mintlify sample). Endpoints, parameters, and response fields are transcribed faithfully from those docs.",
+      "type": "text/plain"
+    }
+  }
+}

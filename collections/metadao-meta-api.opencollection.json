@@ -1,0 +1,40 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "MetaDAO Futarchy DEX Meta API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Meta",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "API information and available endpoints",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://market-api.metadao.fi/"
+          },
+          "docs": "Returns API name, version, documentation link, and the map of available endpoints."
+        },
+        {
+          "info": {
+            "name": "Health check endpoint for monitoring",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://market-api.metadao.fi/health"
+          },
+          "docs": "Returns service health status."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

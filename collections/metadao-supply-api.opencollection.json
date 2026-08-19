@@ -1,0 +1,75 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "MetaDAO Futarchy DEX Meta Supply API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Supply",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Complete supply breakdown with allocation details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://market-api.metadao.fi/api/supply/:mintAddress",
+            "params": [
+              {
+                "name": "mintAddress",
+                "value": "METAwkXcqyXKy1AtsSgJ8JiUHwGCafnZL38n3vYmeta",
+                "type": "path",
+                "description": "The SPL token mint address (Solana PublicKey)."
+              }
+            ]
+          },
+          "docs": "Returns complete supply information for a token, including circulating supply, team performance package, FutarchyAMM liquidity, and Meteora LP liquidity. For launchpad tokens, circulating supply excludes the team performance package but includes all liquidity."
+        },
+        {
+          "info": {
+            "name": "Total supply only",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://market-api.metadao.fi/api/supply/:mintAddress/total",
+            "params": [
+              {
+                "name": "mintAddress",
+                "value": "METAwkXcqyXKy1AtsSgJ8JiUHwGCafnZL38n3vYmeta",
+                "type": "path",
+                "description": "The SPL token mint address (Solana PublicKey)."
+              }
+            ]
+          },
+          "docs": "Returns the total supply for a token as a formatted string."
+        },
+        {
+          "info": {
+            "name": "Circulating supply (excludes team performance package)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://market-api.metadao.fi/api/supply/:mintAddress/circulating",
+            "params": [
+              {
+                "name": "mintAddress",
+                "value": "METAwkXcqyXKy1AtsSgJ8JiUHwGCafnZL38n3vYmeta",
+                "type": "path",
+                "description": "The SPL token mint address (Solana PublicKey)."
+              }
+            ]
+          },
+          "docs": "Returns the circulating supply for a token. Excludes the team performance package; includes FutarchyAMM and Meteora liquidity."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

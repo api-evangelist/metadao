@@ -1,0 +1,176 @@
+{
+  "item": [
+    {
+      "id": "8aaee8a4-ec06-49e4-a53b-1f8d9fcd89d5",
+      "name": "Tickers",
+      "description": {
+        "content": "DAO trading pairs, pricing, and volume",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "32f7a345-36db-403d-af97-42926251af31",
+          "name": "All DAO tickers with pricing and volume information",
+          "request": {
+            "name": "All DAO tickers with pricing and volume information",
+            "description": {
+              "content": "Returns comprehensive trading information for all DAOs discovered in the Futarchy protocol. CoinGecko DEX API compatible. Requires no parameters.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "tickers"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "b42b7c74-ab63-4b84-9b61-0d09152da08b",
+              "name": "Array of ticker objects",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "tickers"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"ticker_id\": \"string\",\n    \"base_currency\": \"string\",\n    \"target_currency\": \"string\",\n    \"pool_id\": \"string\",\n    \"last_price\": \"string\",\n    \"base_volume\": \"string\",\n    \"target_volume\": \"string\",\n    \"liquidity_in_usd\": \"string\",\n    \"bid\": \"string\",\n    \"ask\": \"string\",\n    \"base_symbol\": \"string\",\n    \"base_name\": \"string\",\n    \"target_symbol\": \"string\",\n    \"target_name\": \"string\"\n  },\n  {\n    \"ticker_id\": \"string\",\n    \"base_currency\": \"string\",\n    \"target_currency\": \"string\",\n    \"pool_id\": \"string\",\n    \"last_price\": \"string\",\n    \"base_volume\": \"string\",\n    \"target_volume\": \"string\",\n    \"liquidity_in_usd\": \"string\",\n    \"bid\": \"string\",\n    \"ask\": \"string\",\n    \"base_symbol\": \"string\",\n    \"base_name\": \"string\",\n    \"target_symbol\": \"string\",\n    \"target_name\": \"string\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5c86ef80-acba-4b15-94bc-3782a0a69717",
+              "name": "Rate limit exceeded (60 requests per minute per IP)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "tickers"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "dda2e005-05fb-4538-8aac-22a084469ced",
+              "name": "An unexpected error occurred on the server",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "tickers"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://market-api.metadao.fi",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "8ee7b008-712b-41bc-ac57-a3bbac0697bc",
+    "name": "MetaDAO Futarchy DEX Meta Tickers API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "CoinGecko-compatible DEX API for the MetaDAO Futarchy protocol on Solana. It automatically discovers and aggregates all DAOs from the Futarchy protocol and exposes real-time pricing, trading volume (derived from protocol fees), liquidity, and token supply information. The API is public and read-only, requires no authentication, and is rate limited to 60 requests per minute per IP. Prices are calculated from on-chain spot pool reserves only (not conditional/futarchy markets). This OpenAPI description was generated by the API Evangelist enrichment pipeline from the provider's published API documentation at https://api-docs.metadao.fi (the provider does not publish its own OpenAPI; the openapi.json served by the docs site is the default Mintlify sample). Endpoints, parameters, and response fields are transcribed faithfully from those docs.",
+      "type": "text/plain"
+    }
+  }
+}

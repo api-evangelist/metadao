@@ -1,0 +1,29 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "MetaDAO Futarchy DEX Meta Tickers API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Tickers",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "All DAO tickers with pricing and volume information",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://market-api.metadao.fi/api/tickers"
+          },
+          "docs": "Returns comprehensive trading information for all DAOs discovered in the Futarchy protocol. CoinGecko DEX API compatible. Requires no parameters."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

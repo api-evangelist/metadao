@@ -1,0 +1,180 @@
+{
+  "item": [
+    {
+      "id": "5a88220a-e082-42a1-941f-49e89feb1353",
+      "name": "Volume",
+      "description": {
+        "content": "Aggregate trading volume",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "4e4de235-d2ed-4e08-827c-70c343076201",
+          "name": "Aggregate volume with daily breakdown for all DAO tokens",
+          "request": {
+            "name": "Aggregate volume with daily breakdown for all DAO tokens",
+            "description": {
+              "content": "Returns comprehensive trading volume for all DAO tokens since launch, including a daily breakdown and per-token totals.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "volume",
+                "aggregate"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "9feb3460-15e9-4ba7-8e08-f9aa5b242713",
+              "name": "Aggregate volume",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "volume",
+                    "aggregate"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"totalVolume\": \"string\",\n  \"dailyBreakdown\": [\n    {\n      \"date\": \"string\",\n      \"volume\": \"string\",\n      \"trades\": 4957.8049738668215\n    },\n    {\n      \"date\": \"string\",\n      \"volume\": \"string\",\n      \"trades\": 7286.65017055299\n    }\n  ],\n  \"tokens\": [\n    {\n      \"mint\": \"string\",\n      \"symbol\": \"string\",\n      \"totalVolume\": \"string\"\n    },\n    {\n      \"mint\": \"string\",\n      \"symbol\": \"string\",\n      \"totalVolume\": \"string\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5bdb3866-28ea-4fa0-9dd8-ec476dda07ad",
+              "name": "Rate limit exceeded (60 requests per minute per IP)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "volume",
+                    "aggregate"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f52f241b-30ce-4941-ba6f-f923aaf9fb2f",
+              "name": "An unexpected error occurred on the server",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "volume",
+                    "aggregate"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://market-api.metadao.fi",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "7d420be2-6ff2-4228-8099-d6d372f457fe",
+    "name": "MetaDAO Futarchy DEX Meta Volume API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "CoinGecko-compatible DEX API for the MetaDAO Futarchy protocol on Solana. It automatically discovers and aggregates all DAOs from the Futarchy protocol and exposes real-time pricing, trading volume (derived from protocol fees), liquidity, and token supply information. The API is public and read-only, requires no authentication, and is rate limited to 60 requests per minute per IP. Prices are calculated from on-chain spot pool reserves only (not conditional/futarchy markets). This OpenAPI description was generated by the API Evangelist enrichment pipeline from the provider's published API documentation at https://api-docs.metadao.fi (the provider does not publish its own OpenAPI; the openapi.json served by the docs site is the default Mintlify sample). Endpoints, parameters, and response fields are transcribed faithfully from those docs.",
+      "type": "text/plain"
+    }
+  }
+}

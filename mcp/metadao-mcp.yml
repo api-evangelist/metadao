@@ -2,34 +2,38 @@ generated: '2026-07-20'
 method: derived
 status: candidate
 source: openapi/metadao-futarchy-dex-openapi.yml
-note: >-
-  No official MetaDAO MCP server was found (searched docs, npm
-  @modelcontextprotocol, and MCP registries). This is a CANDIDATE tool list
-  derived one-to-one from the documented Futarchy DEX API operations. The API is
-  public and read-only, so all candidate tools are safe read/connected tools.
+note: No official MetaDAO MCP server was found (searched docs, npm @modelcontextprotocol, and MCP registries).
+  This is a CANDIDATE tool list derived one-to-one from the documented Futarchy DEX API operations. The
+  API is public and read-only, so all candidate tools are safe read/connected tools.
 server:
   name: metadao-futarchy-dex
   transport: http
   base_url: https://market-api.metadao.fi
 tools:
-  - name: get_api_info
-    description: Get API name, version, and available endpoints.
-    source_operation: openapi/metadao-futarchy-dex-openapi.yml#getApiInfo
-  - name: get_tickers
-    description: List all DAO tickers with pricing and volume (CoinGecko DEX compatible).
-    source_operation: openapi/metadao-futarchy-dex-openapi.yml#getTickers
-  - name: get_supply
-    description: Get the complete supply breakdown for a token by mint address.
-    source_operation: openapi/metadao-futarchy-dex-openapi.yml#getSupply
-  - name: get_total_supply
-    description: Get the total supply for a token by mint address.
-    source_operation: openapi/metadao-futarchy-dex-openapi.yml#getTotalSupply
-  - name: get_circulating_supply
-    description: Get the circulating supply for a token (excludes team performance package).
-    source_operation: openapi/metadao-futarchy-dex-openapi.yml#getCirculatingSupply
-  - name: get_aggregate_volume
-    description: Get aggregate trading volume with daily breakdown for all DAO tokens.
-    source_operation: openapi/metadao-futarchy-dex-openapi.yml#getAggregateVolume
-  - name: get_health
-    description: Check API service health.
-    source_operation: openapi/metadao-futarchy-dex-openapi.yml#getHealth
+- name: get_api_info
+  description: Get API name, version, and available endpoints.
+  source_operation: openapi/metadao-futarchy-dex-openapi.yml#getApiInfo
+- name: get_tickers
+  description: List all DAO tickers with pricing and volume (CoinGecko DEX compatible).
+  source_operation: openapi/metadao-futarchy-dex-openapi.yml#getTickers
+- name: get_supply
+  description: Get the complete supply breakdown for a token by mint address.
+  source_operation: openapi/metadao-futarchy-dex-openapi.yml#getSupply
+- name: get_total_supply
+  description: Get the total supply for a token by mint address.
+  source_operation: openapi/metadao-futarchy-dex-openapi.yml#getTotalSupply
+- name: get_circulating_supply
+  description: Get the circulating supply for a token (excludes team performance package).
+  source_operation: openapi/metadao-futarchy-dex-openapi.yml#getCirculatingSupply
+- name: get_aggregate_volume
+  description: Get aggregate trading volume with daily breakdown for all DAO tokens.
+  source_operation: openapi/metadao-futarchy-dex-openapi.yml#getAggregateVolume
+- name: get_health
+  description: Check API service health.
+  source_operation: openapi/metadao-futarchy-dex-openapi.yml#getHealth
+deployment:
+  mode: none
+  verified: derived
+  tools: 7
+  checked: '2026-08-12'
+  source: catalog MCP census

@@ -1,0 +1,29 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "MetaDAO Futarchy DEX Meta Volume API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Volume",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Aggregate volume with daily breakdown for all DAO tokens",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://market-api.metadao.fi/api/volume/aggregate"
+          },
+          "docs": "Returns comprehensive trading volume for all DAO tokens since launch, including a daily breakdown and per-token totals."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
