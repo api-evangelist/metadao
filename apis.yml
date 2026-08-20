@@ -43,6 +43,15 @@ tags:
 - Governance
 - Market Data
 - Futarchy
+tags_raw:
+- Company
+- Crypto Tools
+- DeFi
+- Solana
+- DEX
+- Governance
+- Market Data
+- Futarchy
 - API
 apis:
 - aid: metadao:metadao-meta-api
