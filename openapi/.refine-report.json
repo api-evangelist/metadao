@@ -1,10 +1,7 @@
 {
   "provider": "metadao",
   "sources": [
-    "metadao-meta-api-openapi.yml",
-    "metadao-supply-api-openapi.yml",
-    "metadao-tickers-api-openapi.yml",
-    "metadao-volume-api-openapi.yml"
+    "_ae-authored/metadao-futarchy-dex-openapi.yml"
   ],
   "outputs": [
     "metadao-meta-api-openapi.yml",
@@ -15,6 +12,15 @@
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (0 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "metadao-futarchy-dex-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "metadao-meta-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "metadao-supply-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "metadao-tickers-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "metadao-volume-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
