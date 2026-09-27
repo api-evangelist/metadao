@@ -108,14 +108,14 @@ components:
             circulatingSupply:
               type: string
   responses:
-    NotFound:
-      description: The requested resource does not exist
+    RateLimited:
+      description: Rate limit exceeded (60 requests per minute per IP)
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    RateLimited:
-      description: Rate limit exceeded (60 requests per minute per IP)
+    NotFound:
+      description: The requested resource does not exist
       content:
         application/json:
           schema:
