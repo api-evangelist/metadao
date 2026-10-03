@@ -83,15 +83,6 @@ paths:
           $ref: '#/components/responses/RateLimited'
 components:
   schemas:
-    Error:
-      type: object
-      description: All API errors follow a consistent envelope.
-      properties:
-        error:
-          type: string
-          description: Error message describing what went wrong
-      required:
-      - error
     SupplyResponse:
       type: object
       properties:
@@ -107,6 +98,24 @@ components:
               type: string
             circulatingSupply:
               type: string
+    Error:
+      type: object
+      description: All API errors follow a consistent envelope.
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+      required:
+      - error
+  parameters:
+    MintAddress:
+      name: mintAddress
+      in: path
+      required: true
+      description: The SPL token mint address (Solana PublicKey).
+      schema:
+        type: string
+      example: METAwkXcqyXKy1AtsSgJ8JiUHwGCafnZL38n3vYmeta
   responses:
     RateLimited:
       description: Rate limit exceeded (60 requests per minute per IP)
@@ -120,12 +129,3 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-  parameters:
-    MintAddress:
-      name: mintAddress
-      in: path
-      required: true
-      description: The SPL token mint address (Solana PublicKey).
-      schema:
-        type: string
-      example: METAwkXcqyXKy1AtsSgJ8JiUHwGCafnZL38n3vYmeta

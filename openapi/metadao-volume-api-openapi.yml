@@ -48,15 +48,6 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
   schemas:
-    Error:
-      type: object
-      description: All API errors follow a consistent envelope.
-      properties:
-        error:
-          type: string
-          description: Error message describing what went wrong
-      required:
-      - error
     VolumeAggregate:
       type: object
       properties:
@@ -86,3 +77,12 @@ components:
                 type: string
               totalVolume:
                 type: string
+    Error:
+      type: object
+      description: All API errors follow a consistent envelope.
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+      required:
+      - error
