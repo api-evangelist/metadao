@@ -82,6 +82,19 @@ paths:
         '429':
           $ref: '#/components/responses/RateLimited'
 components:
+  responses:
+    NotFound:
+      description: The requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded (60 requests per minute per IP)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     SupplyResponse:
       type: object
@@ -116,16 +129,3 @@ components:
       schema:
         type: string
       example: METAwkXcqyXKy1AtsSgJ8JiUHwGCafnZL38n3vYmeta
-  responses:
-    RateLimited:
-      description: Rate limit exceeded (60 requests per minute per IP)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: The requested resource does not exist
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'

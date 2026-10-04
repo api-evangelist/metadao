@@ -36,20 +36,16 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 components:
-  responses:
-    ServerError:
-      description: An unexpected error occurred on the server
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    RateLimited:
-      description: Rate limit exceeded (60 requests per minute per IP)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   schemas:
+    Error:
+      type: object
+      description: All API errors follow a consistent envelope.
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+      required:
+      - error
     Ticker:
       type: object
       description: CoinGecko-compatible ticker for a DAO trading pair.
@@ -100,12 +96,16 @@ components:
       - liquidity_in_usd
       - bid
       - ask
-    Error:
-      type: object
-      description: All API errors follow a consistent envelope.
-      properties:
-        error:
-          type: string
-          description: Error message describing what went wrong
-      required:
-      - error
+  responses:
+    ServerError:
+      description: An unexpected error occurred on the server
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded (60 requests per minute per IP)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
