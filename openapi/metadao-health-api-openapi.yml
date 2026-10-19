@@ -1,0 +1,439 @@
+openapi: 3.2.0
+info:
+  title: Futarchy External Health API
+  version: 2.0.0
+  description: 'Public, read-only HTTP API serving Futarchy protocol DEX data (FutarchyAMM spot markets, plus Meteora pools for daily market data) to aggregators such as CoinGecko, CoinMarketCap, DexScreener and Jupiter, and to dashboards.
+
+
+    **Versioning.** Every data endpoint is served under `/v1` (e.g. `/v1/api/tickers`) and, unchanged, at its unversioned path, which is a frozen alias of v1. Health, probe, metrics and docs endpoints are not versioned. Breaking changes ship as a new version prefix. A deprecated version answers with `Deprecation` (RFC 9745), `Sunset` (RFC 8594) and `Link: ; rel="successor-version"` headers.
+
+
+    **Units.** Token amounts, prices and volumes are in human units (already divided by the mint decimals). Most adapters serve them as decimal strings; fields suffixed `Raw` are integer strings in base units. Adapters whose consumer requires JSON numbers (CoinMarketCap, DexScreener, the Jupiter supply endpoints) serve numbers, as noted per schema.
+
+
+    **Rate limits.** Anonymous clients get 60 requests per minute per IP. Trusted partners send an `X-API-Key` header and get a higher limit; an unknown key is rejected with 401 `INVALID_API_KEY`. Rate-limited responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds); a 429 also carries `Retry-After` (seconds). Container probes (`/health/startup`, `/health/ready`, `/health/live`) are not rate limited. Limits are enforced across all replicas when the deployment shares a Redis store.
+
+
+    **Caching.** Successful data responses are sent with `Cache-Control: private, max-age=30` (client-side reuse only; responses carry per-caller rate-limit headers). Errors, health and metrics responses are `Cache-Control: no-store`. Responses over 1 KB are compressed (`br`, `gzip` or `deflate`) when the request sends `Accept-Encoding`.
+
+
+    **Serving invariant.** Infrastructure failures (Solana RPC, served database) return a 5xx. The API never answers 200 with zero, empty, or placeholder financial data because a dependency failed. Retry on 5xx; treat a 200 as authoritative.
+
+
+    **Errors.** Every error is JSON in one shape, the `Error` schema: `{ error, code, field?, requestId }`. Branch on `code` (stable), not on the `error` message (human-readable, may change); `field` names the offending parameter on a 400. Each request may take each query parameter at most once: a repeated parameter is a 400 `INVALID_QUERY_PARAMETER`. Unknown routes return 404 `NOT_FOUND`. A request that exceeds the server timeout returns 503 `REQUEST_TIMEOUT`.'
+servers:
+- url: /
+tags:
+- name: Health
+  description: Health checks, container probes and Prometheus metrics.
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Basic liveness
+      description: Process is up. Never checks dependencies. Rate limited (unlike the `/health/*` probes).
+      tags:
+      - Health
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          description: Process is up.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasicHealth'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+  /api/health:
+    get:
+      operationId: getDetailedHealth
+      summary: Detailed health
+      description: Served-database connectivity, data-contract and freshness checks. Returns 200 when `status` is "healthy" and 503 with the same body when it is "degraded".
+      tags:
+      - Health
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          description: Healthy.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailedHealth'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          description: 'Degraded (same body, `status: "degraded"` with a `message`), or `REQUEST_TIMEOUT` (`Error` body) if the checks took longer than the request timeout.'
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/DetailedHealth'
+                - $ref: '#/components/schemas/Error'
+  /health/startup:
+    get:
+      operationId: getStartupProbe
+      summary: Startup probe
+      description: 'Container startup probe: 200 once the served database connected at boot. Not rate limited.'
+      tags:
+      - Health
+      security:
+      - {}
+      responses:
+        '200':
+          description: Started.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeStatus'
+        '503':
+          description: 'Served database not connected (`status: "starting"`).'
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeStatus'
+  /health/ready:
+    get:
+      operationId: getReadinessProbe
+      summary: Readiness probe
+      description: 'Container readiness probe: 200 while the served database answers within 2s. 503 with `status` "unavailable" when it does not, or "draining" during shutdown. Not rate limited.'
+      tags:
+      - Health
+      security:
+      - {}
+      responses:
+        '200':
+          description: Ready.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeStatus'
+        '503':
+          description: Not ready.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeStatus'
+  /health/live:
+    get:
+      operationId: getLivenessProbe
+      summary: Liveness probe
+      description: 'Container liveness probe: 200 whenever the event loop can answer. No dependency checks. Not rate limited.'
+      tags:
+      - Health
+      security:
+      - {}
+      responses:
+        '200':
+          description: Alive.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeStatus'
+  /metrics:
+    get:
+      operationId: getMetrics
+      summary: Prometheus metrics
+      description: 'Prometheus text exposition format. When the server sets `METRICS_TOKEN`, requests must send `Authorization: Bearer ` (401 otherwise); the endpoint is open only when `METRICS_TOKEN` is unset.'
+      tags:
+      - Health
+      security:
+      - metricsBearer: []
+      responses:
+        '200':
+          description: Metrics.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          description: Metrics could not be generated (plain-text body).
+          content:
+            text/plain:
+              schema:
+                type: string
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+components:
+  schemas:
+    Error:
+      type: object
+      description: The error body of every endpoint.
+      required:
+      - error
+      - code
+      - requestId
+      properties:
+        error:
+          type: string
+          description: Human-readable message. May change; branch on `code`.
+        code:
+          type: string
+          description: Stable machine-readable code.
+          examples:
+          - NOT_FOUND
+          - RATE_LIMITED
+          - INVALID_API_KEY
+          - INVALID_QUERY_PARAMETER
+          - INVALID_MINT_ADDRESS
+          - SERVED_DB_UNAVAILABLE
+          - SERVED_DATA_STALE
+          - REQUEST_TIMEOUT
+          - INTERNAL_ERROR
+        field:
+          type: string
+          description: 'On a 400: the request parameter that was rejected.'
+          examples:
+          - startDate
+          - id
+        requestId:
+          type: string
+          description: Request id, same as the `X-Request-Id` header.
+    BasicHealth:
+      type: object
+      required:
+      - status
+      - timestamp
+      - uptime
+      properties:
+        status:
+          type: string
+          const: healthy
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+          description: Process uptime in seconds.
+    DetailedHealth:
+      type: object
+      required:
+      - status
+      - timestamp
+      - uptime
+      - servedDatabase
+      properties:
+        status:
+          type: string
+          enum:
+          - healthy
+          - degraded
+        message:
+          type: string
+          description: Reason, present when degraded.
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+          description: Process uptime in seconds.
+        servedDatabase:
+          type: object
+          required:
+          - connected
+          - servedDataContract
+          - freshness
+          properties:
+            connected:
+              type: boolean
+            servedDataContract:
+              type: object
+              required:
+              - ok
+              - checkedAt
+              - missing
+              properties:
+                ok:
+                  type: boolean
+                checkedAt:
+                  type: string
+                  format: date-time
+                missing:
+                  type: array
+                  items:
+                    type: string
+                  description: Missing tables/columns, or ["connection"].
+            freshness:
+              description: Newest served swap; null when disconnected or the check failed.
+              oneOf:
+              - type: object
+                required:
+                - latestSwapAt
+                - ageSeconds
+                properties:
+                  latestSwapAt:
+                    type:
+                    - string
+                    - 'null'
+                    format: date-time
+                  ageSeconds:
+                    type:
+                    - number
+                    - 'null'
+              - type: 'null'
+    ProbeStatus:
+      type: object
+      required:
+      - status
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+          - starting
+          - draining
+          - unavailable
+        message:
+          type: string
+  responses:
+    Unauthorized:
+      description: Unknown `X-API-Key` (`INVALID_API_KEY`), or missing/invalid metrics bearer token on `/metrics`.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Rate limit exceeded (`RATE_LIMITED`).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: A dependency is unavailable or its data is stale (e.g. `SERVED_DB_UNAVAILABLE`, `SERVED_DATA_STALE`) or the request timed out (`REQUEST_TIMEOUT`). Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  headers:
+    XRequestId:
+      description: Request id (echoes a safe client-supplied `X-Request-Id`, otherwise a generated UUID). Quote it when reporting problems.
+      schema:
+        type: string
+    RateLimitReset:
+      description: Seconds until the current window resets.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Requests allowed per window for this client tier.
+      schema:
+        type: integer
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema:
+        type: integer
+    CacheControlNoStore:
+      description: '`no-store` on errors, health and metrics responses.'
+      schema:
+        type: string
+        const: no-store
+    RateLimitRemaining:
+      description: Requests remaining in the current window.
+      schema:
+        type: integer
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional partner key. Requests without it are served at the anonymous rate limit (60/min per IP); a valid key gets the trusted limit; an unknown key is rejected with 401 `INVALID_API_KEY`.
+    metricsBearer:
+      type: http
+      scheme: bearer
+      description: Required on `/metrics` only when the server sets `METRICS_TOKEN`; the token is that value. When `METRICS_TOKEN` is unset, `/metrics` is open.

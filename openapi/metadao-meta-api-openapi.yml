@@ -1,45 +1,99 @@
 openapi: 3.2.0
 info:
-  title: MetaDAO Futarchy DEX Meta API
-  version: 1.0.0
-  description: CoinGecko-compatible DEX API for the MetaDAO Futarchy protocol on Solana.
-  x-generated-by: api-evangelist-enrichment-pipeline
-  x-generated-from: https://api-docs.metadao.fi/llms.txt
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+  title: Metadao Meta API
+  x-refined-note:
+  - x-generated-by differs across the merged source definitions and was not carried
+  - x-generated-from differs across the merged source definitions and was not carried
+  version: '1.0'
+  description: 'Operations tagged Meta across 2 of this provider''s published API definitions: metadao-openapi.json, metadao-futarchy-dex-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
+- url: /
 - url: https://market-api.metadao.fi
   description: Public production API
 tags:
 - name: Meta
-  description: API information and health
+  description: API index and documentation.
 paths:
   /:
     get:
-      operationId: getApiInfo
+      operationId: getApiIndex
+      summary: API index
+      description: Human-oriented index of the available endpoints and DEX metadata. Informational; the field set is not a stable contract.
       tags:
       - Meta
-      summary: API information and available endpoints
-      description: Returns API name, version, documentation link, and the map of available endpoints.
+      security:
+      - {}
+      - apiKey: []
       responses:
         '200':
-          description: API information
+          description: API index.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlPublic'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiIndex'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    servers:
+    - url: /
+  /openapi.json:
+    get:
+      operationId: getOpenApiSpec
+      summary: OpenAPI document
+      description: This OpenAPI 3.1 document.
+      tags:
+      - Meta
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          description: The OpenAPI document.
           content:
             application/json:
               schema:
                 type: object
-                properties:
-                  name:
-                    type: string
-                  version:
-                    type: string
-                  documentation:
-                    type: string
-                  endpoints:
-                    type: object
-                    additionalProperties:
-                      type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    servers:
+    - url: /
+  /docs:
+    get:
+      operationId: getDocs
+      summary: HTML API documentation
+      description: Human-readable documentation page rendered from `/openapi.json`.
+      tags:
+      - Meta
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          description: HTML documentation page.
+          content:
+            text/html:
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+    servers:
+    - url: /
   /health:
     get:
       operationId: getHealth
@@ -54,3 +108,154 @@ paths:
             application/json:
               schema:
                 type: object
+    servers:
+    - url: https://market-api.metadao.fi
+      description: Public production API
+components:
+  schemas:
+    Error:
+      type: object
+      description: The error body of every endpoint.
+      required:
+      - error
+      - code
+      - requestId
+      properties:
+        error:
+          type: string
+          description: Human-readable message. May change; branch on `code`.
+        code:
+          type: string
+          description: Stable machine-readable code.
+          examples:
+          - NOT_FOUND
+          - RATE_LIMITED
+          - INVALID_API_KEY
+          - INVALID_QUERY_PARAMETER
+          - INVALID_MINT_ADDRESS
+          - SERVED_DB_UNAVAILABLE
+          - SERVED_DATA_STALE
+          - REQUEST_TIMEOUT
+          - INTERNAL_ERROR
+        field:
+          type: string
+          description: 'On a 400: the request parameter that was rejected.'
+          examples:
+          - startDate
+          - id
+        requestId:
+          type: string
+          description: Request id, same as the `X-Request-Id` header.
+    ApiIndex:
+      type: object
+      description: Informational endpoint index.
+      required:
+      - name
+      - version
+      - endpoints
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        documentation:
+          type: string
+        endpoints:
+          type: object
+          additionalProperties:
+            type: string
+        dexscreener:
+          type: object
+          additionalProperties:
+            type: string
+        coinmarketcap:
+          type: object
+          additionalProperties:
+            type: string
+        dex:
+          type: object
+          properties:
+            fork_type:
+              type: string
+            factory_address:
+              type: string
+            router_address:
+              type: string
+        supplyBreakdown:
+          type: object
+          additionalProperties:
+            type: string
+        note:
+          type: string
+  responses:
+    Unauthorized:
+      description: Unknown `X-API-Key` (`INVALID_API_KEY`), or missing/invalid metrics bearer token on `/metrics`.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Rate limit exceeded (`RATE_LIMITED`).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  headers:
+    XRequestId:
+      description: Request id (echoes a safe client-supplied `X-Request-Id`, otherwise a generated UUID). Quote it when reporting problems.
+      schema:
+        type: string
+    RateLimitReset:
+      description: Seconds until the current window resets.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Requests allowed per window for this client tier.
+      schema:
+        type: integer
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema:
+        type: integer
+    CacheControlNoStore:
+      description: '`no-store` on errors, health and metrics responses.'
+      schema:
+        type: string
+        const: no-store
+    RateLimitRemaining:
+      description: Requests remaining in the current window.
+      schema:
+        type: integer
+    CacheControlPublic:
+      description: '`private, max-age=30` on successful data responses.'
+      schema:
+        type: string
+        examples:
+        - private, max-age=30
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional partner key. Requests without it are served at the anonymous rate limit (60/min per IP); a valid key gets the trusted limit; an unknown key is rejected with 401 `INVALID_API_KEY`.
+    metricsBearer:
+      type: http
+      scheme: bearer
+      description: Required on `/metrics` only when the server sets `METRICS_TOKEN`; the token is that value. When `METRICS_TOKEN` is unset, `/metrics` is open.
+x-refined-from:
+- metadao-openapi.json
+- metadao-futarchy-dex-openapi.yml

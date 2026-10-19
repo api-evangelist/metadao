@@ -1,102 +1,571 @@
 openapi: 3.2.0
 info:
-  title: MetaDAO Futarchy DEX Supply API
-  version: 1.0.0
-  description: CoinGecko-compatible DEX API for the MetaDAO Futarchy protocol on Solana.
-  x-generated-by: api-evangelist-enrichment-pipeline
-  x-generated-from: https://api-docs.metadao.fi/llms.txt
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+  title: Metadao Supply API
+  x-refined-note:
+  - x-generated-by differs across the merged source definitions and was not carried
+  - x-generated-from differs across the merged source definitions and was not carried
+  version: '1.0'
+  description: 'Operations tagged Supply across 2 of this provider''s published API definitions: metadao-openapi.json, metadao-futarchy-dex-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
+- url: /
 - url: https://market-api.metadao.fi
   description: Public production API
 tags:
 - name: Supply
-  description: Token supply breakdown and allocation
+  description: Token total and circulating supply, including launchpad allocations.
 paths:
   /api/supply/{mintAddress}:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
     get:
       operationId: getSupply
+      summary: Supply breakdown
+      description: Total and circulating supply plus the launchpad allocation breakdown. `result` is the TOTAL supply; circulating supply is in `data.circulatingSupply`.
       tags:
       - Supply
-      summary: Complete supply breakdown with allocation details
-      description: Returns complete supply information for a token, including circulating supply, team performance package, FutarchyAMM liquidity, and Meteora LP liquidity. For launchpad tokens, circulating supply excludes the team performance package but includes all liquidity.
+      security:
+      - {}
+      - apiKey: []
       parameters:
       - $ref: '#/components/parameters/MintAddress'
       responses:
         '200':
-          description: Supply breakdown
+          description: Supply breakdown.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlPublic'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SupplyResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '429':
-          $ref: '#/components/responses/RateLimited'
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
   /api/supply/{mintAddress}/total:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
     get:
       operationId: getTotalSupply
+      summary: Total supply
       tags:
       - Supply
-      summary: Total supply only
-      description: Returns the total supply for a token as a formatted string.
+      security:
+      - {}
+      - apiKey: []
       parameters:
       - $ref: '#/components/parameters/MintAddress'
       responses:
         '200':
-          description: Total supply
+          description: Total supply.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlPublic'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: '#/components/schemas/SupplyResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '429':
-          $ref: '#/components/responses/RateLimited'
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
   /api/supply/{mintAddress}/circulating:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
     get:
       operationId: getCirculatingSupply
+      summary: Circulating supply
+      description: Circulating supply = total supply minus the team performance package, unclaimed additional token allocation and DAO treasury tokens. AMM and Meteora liquidity IS circulating. `allocation` is present only for launchpad tokens with a non-trivial breakdown.
       tags:
       - Supply
-      summary: Circulating supply (excludes team performance package)
-      description: Returns the circulating supply for a token. Excludes the team performance package; includes FutarchyAMM and Meteora liquidity.
+      security:
+      - {}
+      - apiKey: []
       parameters:
       - $ref: '#/components/parameters/MintAddress'
       responses:
         '200':
-          description: Circulating supply
+          description: Circulating supply.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlPublic'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-        '404':
-          $ref: '#/components/responses/NotFound'
+                $ref: '#/components/schemas/CirculatingSupplyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '429':
-          $ref: '#/components/responses/RateLimited'
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/supply/{mintAddress}/jupiter/circulating:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getJupiterCirculatingSupply
+      summary: Circulating supply (Jupiter format)
+      tags:
+      - Supply
+      security:
+      - {}
+      - apiKey: []
+      parameters:
+      - $ref: '#/components/parameters/MintAddress'
+      responses:
+        '200':
+          description: Circulating supply as a JSON number.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlPublic'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JupiterCirculatingSupply'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/supply/{mintAddress}/jupiter/total:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getJupiterTotalSupply
+      summary: Total supply (Jupiter format)
+      tags:
+      - Supply
+      security:
+      - {}
+      - apiKey: []
+      parameters:
+      - $ref: '#/components/parameters/MintAddress'
+      responses:
+        '200':
+          description: Total supply as a JSON number.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlPublic'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JupiterTotalSupply'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
 components:
-  responses:
-    NotFound:
-      description: The requested resource does not exist
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    RateLimited:
-      description: Rate limit exceeded (60 requests per minute per IP)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+  headers:
+    RateLimitLimit:
+      description: Requests allowed per window for this client tier.
+      schema:
+        type: integer
+    CacheControlNoStore:
+      description: '`no-store` on errors, health and metrics responses.'
+      schema:
+        type: string
+        const: no-store
+    RateLimitReset:
+      description: Seconds until the current window resets.
+      schema:
+        type: integer
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema:
+        type: integer
+    RateLimitRemaining:
+      description: Requests remaining in the current window.
+      schema:
+        type: integer
+    CacheControlPublic:
+      description: '`private, max-age=30` on successful data responses.'
+      schema:
+        type: string
+        examples:
+        - private, max-age=30
+    XRequestId:
+      description: Request id (echoes a safe client-supplied `X-Request-Id`, otherwise a generated UUID). Quote it when reporting problems.
+      schema:
+        type: string
   schemas:
+    DaoTreasuryTokens:
+      type: object
+      description: Base tokens held in the DAO treasury vault (not circulating).
+      required:
+      - amount
+      properties:
+        amount:
+          type: string
+        vaultAddress:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Solana public key (base58).
+          examples:
+          - So11111111111111111111111111111111111111112
+    JupiterTotalSupply:
+      type: object
+      required:
+      - totalSupply
+      properties:
+        totalSupply:
+          type: number
+          description: Human units.
+    JupiterCirculatingSupply:
+      type: object
+      required:
+      - circulatingSupply
+      properties:
+        circulatingSupply:
+          type: number
+          description: Human units.
+    TokenSupplyInfo:
+      type: object
+      required:
+      - mint
+      - totalSupply
+      - circulatingSupply
+      - decimals
+      - rawTotalSupply
+      properties:
+        mint:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Solana public key (base58).
+          examples:
+          - So11111111111111111111111111111111111111112
+        totalSupply:
+          type: string
+          description: Total supply. Decimal string in human units.
+          examples:
+          - '1234.56'
+        circulatingSupply:
+          type: string
+          description: Circulating supply. Decimal string in human units.
+          examples:
+          - '1234.56'
+        decimals:
+          type: integer
+        rawTotalSupply:
+          type: string
+          description: Total supply in base units (integer string).
+        allocation:
+          $ref: '#/components/schemas/SupplyAllocation'
+    InitialTokenAllocation:
+      type: object
+      description: Claimed initial allocation that IS circulating (special cases).
+      required:
+      - amount
+      - claimed
+      properties:
+        amount:
+          type: string
+        claimed:
+          type: boolean
+    Error:
+      type: object
+      description: The error body of every endpoint.
+      required:
+      - error
+      - code
+      - requestId
+      properties:
+        error:
+          type: string
+          description: Human-readable message. May change; branch on `code`.
+        code:
+          type: string
+          description: Stable machine-readable code.
+          examples:
+          - NOT_FOUND
+          - RATE_LIMITED
+          - INVALID_API_KEY
+          - INVALID_QUERY_PARAMETER
+          - INVALID_MINT_ADDRESS
+          - SERVED_DB_UNAVAILABLE
+          - SERVED_DATA_STALE
+          - REQUEST_TIMEOUT
+          - INTERNAL_ERROR
+        field:
+          type: string
+          description: 'On a 400: the request parameter that was rejected.'
+          examples:
+          - startDate
+          - id
+        requestId:
+          type: string
+          description: Request id, same as the `X-Request-Id` header.
+    CirculatingSupplyResponse:
+      type: object
+      required:
+      - result
+      properties:
+        result:
+          type: string
+          description: Circulating supply. Decimal string in human units.
+          examples:
+          - '1234.56'
+        allocation:
+          type: object
+          description: Present only for launchpad tokens with allocation details.
+          properties:
+            teamPerformancePackageAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+            futarchyAmmVaultAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+            meteoraPoolAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+            meteoraVaultAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+            additionalTokenAllocation:
+              $ref: '#/components/schemas/AdditionalTokenAllocation'
+            initialTokenAllocation:
+              $ref: '#/components/schemas/InitialTokenAllocation'
+            daoTreasuryTokens:
+              $ref: '#/components/schemas/DaoTreasuryTokens'
+            daoAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+            launchAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+            version:
+              type: string
+              examples:
+              - v0.6
+              - v0.7
+    SupplyAllocation:
+      type: object
+      description: Non-circulating / liquidity breakdown for launchpad tokens. Amounts are decimal strings in human units; zero-amount entries are omitted.
+      properties:
+        teamPerformancePackage:
+          type: object
+          required:
+          - amount
+          properties:
+            amount:
+              type: string
+            address:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+        futarchyAmmLiquidity:
+          type: object
+          required:
+          - amount
+          properties:
+            amount:
+              type: string
+            vaultAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+        meteoraLpLiquidity:
+          type: object
+          required:
+          - amount
+          properties:
+            amount:
+              type: string
+            poolAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+            vaultAddress:
+              type: string
+              pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+              description: Solana public key (base58).
+              examples:
+              - So11111111111111111111111111111111111111112
+        additionalTokenAllocation:
+          $ref: '#/components/schemas/AdditionalTokenAllocation'
+        initialTokenAllocation:
+          $ref: '#/components/schemas/InitialTokenAllocation'
+        daoTreasuryTokens:
+          $ref: '#/components/schemas/DaoTreasuryTokens'
+        daoAddress:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Solana public key (base58).
+          examples:
+          - So11111111111111111111111111111111111111112
+        launchAddress:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Solana public key (base58).
+          examples:
+          - So11111111111111111111111111111111111111112
+        version:
+          type: string
+          examples:
+          - v0.6
+          - v0.7
+    AdditionalTokenAllocation:
+      type: object
+      description: v0.7+ additional token recipient allocation.
+      required:
+      - amount
+      - recipient
+      - claimed
+      properties:
+        amount:
+          type: string
+        recipient:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Solana public key (base58).
+          examples:
+          - So11111111111111111111111111111111111111112
+        claimed:
+          type: boolean
+        tokenAccountAddress:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Solana public key (base58).
+          examples:
+          - So11111111111111111111111111111111111111112
+    SupplyResult:
+      type: object
+      required:
+      - result
+      properties:
+        result:
+          type: string
+          description: Supply. Decimal string in human units.
+          examples:
+          - '1234.56'
     SupplyResponse:
+      type: object
+      required:
+      - result
+      - data
+      properties:
+        result:
+          type: string
+          description: TOTAL supply (same as data.totalSupply). Decimal string in human units.
+          examples:
+          - '1234.56'
+        data:
+          $ref: '#/components/schemas/TokenSupplyInfo'
+    Error_2:
+      type: object
+      description: All API errors follow a consistent envelope.
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+      required:
+      - error
+    SupplyResponse_2:
       type: object
       properties:
         result:
@@ -111,17 +580,85 @@ components:
               type: string
             circulatingSupply:
               type: string
-    Error:
-      type: object
-      description: All API errors follow a consistent envelope.
-      properties:
-        error:
-          type: string
-          description: Error message describing what went wrong
-      required:
-      - error
+  responses:
+    ServiceUnavailable:
+      description: A dependency is unavailable or its data is stale (e.g. `SERVED_DB_UNAVAILABLE`, `SERVED_DATA_STALE`) or the request timed out (`REQUEST_TIMEOUT`). Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Rate limit exceeded (`RATE_LIMITED`).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unknown `X-API-Key` (`INVALID_API_KEY`), or missing/invalid metrics bearer token on `/metrics`.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Unexpected server or upstream (RPC/DB) failure. Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: 'Invalid request: `INVALID_MINT_ADDRESS` for a bad path address, `INVALID_QUERY_PARAMETER` for a missing, malformed or repeated query parameter. `field` names the parameter.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded (60 requests per minute per IP)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error_2'
+    NotFound:
+      description: The requested resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error_2'
   parameters:
     MintAddress:
+      name: mintAddress
+      in: path
+      required: true
+      description: Token mint address. Invalid addresses are 400 `INVALID_MINT_ADDRESS`.
+      schema:
+        type: string
+        pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+        description: Solana public key (base58).
+        examples:
+        - So11111111111111111111111111111111111111112
+    MintAddress_2:
       name: mintAddress
       in: path
       required: true
@@ -129,3 +666,16 @@ components:
       schema:
         type: string
       example: METAwkXcqyXKy1AtsSgJ8JiUHwGCafnZL38n3vYmeta
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional partner key. Requests without it are served at the anonymous rate limit (60/min per IP); a valid key gets the trusted limit; an unknown key is rejected with 401 `INVALID_API_KEY`.
+    metricsBearer:
+      type: http
+      scheme: bearer
+      description: Required on `/metrics` only when the server sets `METRICS_TOKEN`; the token is that value. When `METRICS_TOKEN` is unset, `/metrics` is open.
+x-refined-from:
+- metadao-openapi.json
+- metadao-futarchy-dex-openapi.yml

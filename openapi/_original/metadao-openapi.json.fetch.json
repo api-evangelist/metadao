@@ -1,0 +1,12 @@
+{
+ "url": "https://market-api.metadao.fi/openapi.json",
+ "final": "https://market-api.metadao.fi/openapi.json",
+ "status": 200,
+ "content_type": "application/json; charset=utf-8",
+ "bytes": 68655,
+ "sha256": "27b09f0a2750e92d94eb6693eaaa819d37d35fbd3b6eca7ccad49178f46e3d33",
+ "fetched_at": "2026-10-19",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "byte-identical",
+ "note": "re-archived: the provider's current document replaced a stale archive (roadmap#793); the old files are in openapi/_superseded/2026-10-19-stale"
+}

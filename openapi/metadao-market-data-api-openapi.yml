@@ -1,0 +1,570 @@
+openapi: 3.2.0
+info:
+  title: Futarchy External Market data API
+  version: 2.0.0
+  description: 'Public, read-only HTTP API serving Futarchy protocol DEX data (FutarchyAMM spot markets, plus Meteora pools for daily market data) to aggregators such as CoinGecko, CoinMarketCap, DexScreener and Jupiter, and to dashboards.
+
+
+    **Versioning.** Every data endpoint is served under `/v1` (e.g. `/v1/api/tickers`) and, unchanged, at its unversioned path, which is a frozen alias of v1. Health, probe, metrics and docs endpoints are not versioned. Breaking changes ship as a new version prefix. A deprecated version answers with `Deprecation` (RFC 9745), `Sunset` (RFC 8594) and `Link: ; rel="successor-version"` headers.
+
+
+    **Units.** Token amounts, prices and volumes are in human units (already divided by the mint decimals). Most adapters serve them as decimal strings; fields suffixed `Raw` are integer strings in base units. Adapters whose consumer requires JSON numbers (CoinMarketCap, DexScreener, the Jupiter supply endpoints) serve numbers, as noted per schema.
+
+
+    **Rate limits.** Anonymous clients get 60 requests per minute per IP. Trusted partners send an `X-API-Key` header and get a higher limit; an unknown key is rejected with 401 `INVALID_API_KEY`. Rate-limited responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds); a 429 also carries `Retry-After` (seconds). Container probes (`/health/startup`, `/health/ready`, `/health/live`) are not rate limited. Limits are enforced across all replicas when the deployment shares a Redis store.
+
+
+    **Caching.** Successful data responses are sent with `Cache-Control: private, max-age=30` (client-side reuse only; responses carry per-caller rate-limit headers). Errors, health and metrics responses are `Cache-Control: no-store`. Responses over 1 KB are compressed (`br`, `gzip` or `deflate`) when the request sends `Accept-Encoding`.
+
+
+    **Serving invariant.** Infrastructure failures (Solana RPC, served database) return a 5xx. The API never answers 200 with zero, empty, or placeholder financial data because a dependency failed. Retry on 5xx; treat a 200 as authoritative.
+
+
+    **Errors.** Every error is JSON in one shape, the `Error` schema: `{ error, code, field?, requestId }`. Branch on `code` (stable), not on the `error` message (human-readable, may change); `field` names the offending parameter on a 400. Each request may take each query parameter at most once: a repeated parameter is a 400 `INVALID_QUERY_PARAMETER`. Unknown routes return 404 `NOT_FOUND`. A request that exceeds the server timeout returns 503 `REQUEST_TIMEOUT`.'
+servers:
+- url: /
+tags:
+- name: Market Data
+  description: Daily volume and fee history from the served ETL.
+paths:
+  /api/market-data:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getMarketData
+      summary: Daily market data
+      description: Daily FutarchyAMM (spot, conditional and total) and Meteora activity per token over an inclusive date range. Parameters are validated before the database is touched, so a bad request is always 400.
+      tags:
+      - Market Data
+      security:
+      - {}
+      - apiKey: []
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        description: First UTC day, inclusive (YYYY-MM-DD). Must be a real calendar date on or before `endDate`.
+        schema:
+          type: string
+          format: date
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        example: '2026-01-01'
+      - name: endDate
+        in: query
+        required: true
+        description: Last UTC day, inclusive (YYYY-MM-DD). The range may span at most 366 days (server default); split longer histories into several requests.
+        schema:
+          type: string
+          format: date
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        example: '2026-01-31'
+      - name: tokens
+        in: query
+        required: false
+        description: Comma-separated base-token mints to filter by (at most 100, each a valid Solana address). Omit for all tokens.
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Daily market data.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlPublic'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketDataResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+components:
+  schemas:
+    Error:
+      type: object
+      description: The error body of every endpoint.
+      required:
+      - error
+      - code
+      - requestId
+      properties:
+        error:
+          type: string
+          description: Human-readable message. May change; branch on `code`.
+        code:
+          type: string
+          description: Stable machine-readable code.
+          examples:
+          - NOT_FOUND
+          - RATE_LIMITED
+          - INVALID_API_KEY
+          - INVALID_QUERY_PARAMETER
+          - INVALID_MINT_ADDRESS
+          - SERVED_DB_UNAVAILABLE
+          - SERVED_DATA_STALE
+          - REQUEST_TIMEOUT
+          - INTERNAL_ERROR
+        field:
+          type: string
+          description: 'On a 400: the request parameter that was rejected.'
+          examples:
+          - startDate
+          - id
+        requestId:
+          type: string
+          description: Request id, same as the `X-Request-Id` header.
+    MeteoraDailyVolume:
+      type: object
+      description: One token-day of Meteora activity. Decimal strings in human units.
+      required:
+      - token
+      - date
+      - base_volume
+      - target_volume
+      - buy_volume
+      - sell_volume
+      - trade_count
+      - average_price
+      - usdc_fees
+      - token_fees
+      - token_fees_usdc
+      - token_per_usdc
+      properties:
+        token:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Base token mint.
+          examples:
+          - So11111111111111111111111111111111111111112
+        date:
+          type: string
+          format: date
+        base_volume:
+          type: string
+          description: Volume in the base token. Decimal string in human units.
+          examples:
+          - '1234.56'
+        target_volume:
+          type: string
+          description: Volume in USDC. Decimal string in human units.
+          examples:
+          - '1234.56'
+        buy_volume:
+          type: string
+          description: Buy-side volume. Decimal string in human units.
+          examples:
+          - '1234.56'
+        sell_volume:
+          type: string
+          description: Sell-side volume. Decimal string in human units.
+          examples:
+          - '1234.56'
+        trade_count:
+          type: integer
+        average_price:
+          type: string
+          description: Average price (USDC per token). Decimal string in human units.
+          examples:
+          - '1234.56'
+        usdc_fees:
+          type: string
+          description: Fees in USDC. Decimal string in human units.
+          examples:
+          - '1234.56'
+        token_fees:
+          type: string
+          description: Fees in the base token. Decimal string in human units.
+          examples:
+          - '1234.56'
+        token_fees_usdc:
+          type: string
+          description: Base-token fees valued in USDC. Decimal string in human units.
+          examples:
+          - '1234.56'
+        token_per_usdc:
+          type:
+          - string
+          - 'null'
+          description: base_volume / target_volume; null when target_volume is 0.
+    MarketDataResponse:
+      type: object
+      required:
+      - filters
+      - source
+      - futarchyAMM
+      - meteora
+      properties:
+        filters:
+          type: object
+          required:
+          - tokens
+          - startDate
+          - endDate
+          properties:
+            tokens:
+              description: The requested token list, or the string "all" when no filter was given.
+              oneOf:
+              - type: string
+                const: all
+              - type: array
+                items:
+                  type: string
+            startDate:
+              type: string
+              format: date
+            endDate:
+              type: string
+              format: date
+        source:
+          type: string
+          const: user-pool-etl
+        futarchyAMM:
+          type: object
+          required:
+          - source
+          - count
+          - data
+          properties:
+            source:
+              type: string
+              const: etl-user-pool-daily
+            count:
+              type: integer
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/FutarchyAmmDailyActivity'
+        meteora:
+          type: object
+          required:
+          - source
+          - count
+          - data
+          properties:
+            source:
+              type: string
+              const: etl-meteora-daily
+            count:
+              type: integer
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/MeteoraDailyVolume'
+    FutarchyAmmDailyActivity:
+      type: object
+      description: 'One token-day of FutarchyAMM activity: spot, conditional (null when absent) and totals. Volumes are USD / human token units as decimal strings.'
+      required:
+      - token
+      - date
+      - has_conditional_volume
+      - spot_buy_volume
+      - spot_sell_volume
+      - spot_base_volume
+      - spot_target_volume
+      - spot_usdc_fees
+      - spot_token_fees
+      - spot_token_fees_usdc
+      - spot_protocol_fee_usd
+      - spot_lp_fee_usd
+      - spot_trade_count
+      - conditional_buy_volume
+      - conditional_sell_volume
+      - conditional_base_volume
+      - conditional_target_volume
+      - conditional_usdc_fees
+      - conditional_token_fees
+      - conditional_token_fees_usdc
+      - conditional_protocol_fee_usd
+      - conditional_lp_fee_usd
+      - conditional_trade_count
+      - total_buy_volume
+      - total_sell_volume
+      - total_base_volume
+      - total_target_volume
+      - total_usdc_fees
+      - total_token_fees
+      - total_token_fees_usdc
+      - total_protocol_fee_usd
+      - total_lp_fee_usd
+      - total_trade_count
+      - conditional_reconciled
+      - pending_open_proposals
+      properties:
+        token:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Base token mint.
+          examples:
+          - So11111111111111111111111111111111111111112
+        date:
+          type: string
+          format: date
+          description: UTC day (YYYY-MM-DD).
+        has_conditional_volume:
+          type: boolean
+          description: True when the day has a conditional-market row.
+        spot_buy_volume:
+          type: string
+          description: 'Spot market: Buy-side volume (quote/USD). Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_sell_volume:
+          type: string
+          description: 'Spot market: Sell-side volume (quote/USD). Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_base_volume:
+          type: string
+          description: 'Spot market: Volume in the base token. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_target_volume:
+          type: string
+          description: 'Spot market: Volume in the quote token (USD). Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_usdc_fees:
+          type: string
+          description: 'Spot market: Fees collected in USDC. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_token_fees:
+          type: string
+          description: 'Spot market: Fees collected in the base token. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_token_fees_usdc:
+          type: string
+          description: 'Spot market: Base-token fees valued in USDC. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_protocol_fee_usd:
+          type: string
+          description: 'Spot market: Protocol fee portion (USD), collected to the treasury. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_lp_fee_usd:
+          type: string
+          description: 'Spot market: LP fee portion (USD), retained in the pool. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        spot_trade_count:
+          type: integer
+          description: Spot market trade count.
+        conditional_buy_volume:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: Buy-side volume (quote/USD). Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_sell_volume:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: Sell-side volume (quote/USD). Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_base_volume:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: Volume in the base token. Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_target_volume:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: Volume in the quote token (USD). Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_usdc_fees:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: Fees collected in USDC. Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_token_fees:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: Fees collected in the base token. Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_token_fees_usdc:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: Base-token fees valued in USDC. Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_protocol_fee_usd:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: Protocol fee portion (USD), collected to the treasury. Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_lp_fee_usd:
+          type:
+          - string
+          - 'null'
+          description: 'Conditional markets: LP fee portion (USD), retained in the pool. Decimal string in human units; null when the day had no conditional-market row.'
+        conditional_trade_count:
+          type:
+          - integer
+          - 'null'
+          description: Conditional markets trade count; null when the day had no conditional-market row.
+        total_buy_volume:
+          type: string
+          description: 'Spot + conditional: Buy-side volume (quote/USD). Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_sell_volume:
+          type: string
+          description: 'Spot + conditional: Sell-side volume (quote/USD). Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_base_volume:
+          type: string
+          description: 'Spot + conditional: Volume in the base token. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_target_volume:
+          type: string
+          description: 'Spot + conditional: Volume in the quote token (USD). Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_usdc_fees:
+          type: string
+          description: 'Spot + conditional: Fees collected in USDC. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_token_fees:
+          type: string
+          description: 'Spot + conditional: Fees collected in the base token. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_token_fees_usdc:
+          type: string
+          description: 'Spot + conditional: Base-token fees valued in USDC. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_protocol_fee_usd:
+          type: string
+          description: 'Spot + conditional: Protocol fee portion (USD), collected to the treasury. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_lp_fee_usd:
+          type: string
+          description: 'Spot + conditional: LP fee portion (USD), retained in the pool. Decimal string in human units.'
+          examples:
+          - '1234.56'
+        total_trade_count:
+          type: integer
+          description: Spot + conditional trade count.
+        conditional_reconciled:
+          type: boolean
+          description: Whether conditional volume for the day has been reconciled.
+        pending_open_proposals:
+          type: integer
+          description: Open proposals whose conditional volume is still pending.
+  responses:
+    Unauthorized:
+      description: Unknown `X-API-Key` (`INVALID_API_KEY`), or missing/invalid metrics bearer token on `/metrics`.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Unexpected server or upstream (RPC/DB) failure. Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Rate limit exceeded (`RATE_LIMITED`).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: 'Invalid request: `INVALID_MINT_ADDRESS` for a bad path address, `INVALID_QUERY_PARAMETER` for a missing, malformed or repeated query parameter. `field` names the parameter.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: A dependency is unavailable or its data is stale (e.g. `SERVED_DB_UNAVAILABLE`, `SERVED_DATA_STALE`) or the request timed out (`REQUEST_TIMEOUT`). Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  headers:
+    XRequestId:
+      description: Request id (echoes a safe client-supplied `X-Request-Id`, otherwise a generated UUID). Quote it when reporting problems.
+      schema:
+        type: string
+    RateLimitReset:
+      description: Seconds until the current window resets.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Requests allowed per window for this client tier.
+      schema:
+        type: integer
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema:
+        type: integer
+    CacheControlNoStore:
+      description: '`no-store` on errors, health and metrics responses.'
+      schema:
+        type: string
+        const: no-store
+    RateLimitRemaining:
+      description: Requests remaining in the current window.
+      schema:
+        type: integer
+    CacheControlPublic:
+      description: '`private, max-age=30` on successful data responses.'
+      schema:
+        type: string
+        examples:
+        - private, max-age=30
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional partner key. Requests without it are served at the anonymous rate limit (60/min per IP); a valid key gets the trusted limit; an unknown key is rejected with 401 `INVALID_API_KEY`.
+    metricsBearer:
+      type: http
+      scheme: bearer
+      description: Required on `/metrics` only when the server sets `METRICS_TOKEN`; the token is that value. When `METRICS_TOKEN` is unset, `/metrics` is open.

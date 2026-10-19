@@ -1,9 +1,16 @@
 {
   "provider": "metadao",
   "sources": [
+    "_original/metadao-openapi.json",
     "_ae-authored/metadao-futarchy-dex-openapi.yml"
   ],
   "outputs": [
+    "metadao-coingecko-api-openapi.yml",
+    "metadao-coinmarketcap-api-openapi.yml",
+    "metadao-dexscreener-api-openapi.yml",
+    "metadao-health-api-openapi.yml",
+    "metadao-launches-api-openapi.yml",
+    "metadao-market-data-api-openapi.yml",
     "metadao-meta-api-openapi.yml",
     "metadao-supply-api-openapi.yml",
     "metadao-tickers-api-openapi.yml",
@@ -13,9 +20,12 @@
   "errors": [],
   "warnings": [],
   "notes": [
-    "sourced from openapi/_original/ (0 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "metadao-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
     "metadao-futarchy-dex-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
-    "apis.yml register: already-registered"
+    "tag 'Meta' spans 2 source specs (metadao-openapi.json, metadao-futarchy-dex-openapi.yml): per-path servers applied",
+    "tag 'Supply' spans 2 source specs (metadao-openapi.json, metadao-futarchy-dex-openapi.yml): per-path servers applied",
+    "apis.yml register: written (+6 apis, 10 total)"
   ],
   "skipped": [
     "metadao-meta-api-openapi.yml: previously refined output, superseded by openapi/_original/",

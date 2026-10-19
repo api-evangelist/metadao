@@ -121,6 +121,66 @@ apis:
     url: https://api-docs.metadao.fi/introduction
   - type: APIReference
     url: https://api-docs.metadao.fi/api-reference/overview
+- aid: metadao:metadao-coingecko-api
+  name: MetaDAO Coin Gecko API
+  description: CoinGecko DEX integration (strings for numeric values).
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - CoinGecko
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-coingecko-api-openapi.yml
+- aid: metadao:metadao-coinmarketcap-api
+  name: MetaDAO Coin Market Cap API
+  description: CoinMarketCap DEX integration [Section C] (JSON numbers). Also served under `/cmc/v1`.
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - CoinMarketCap
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-coinmarketcap-api-openapi.yml
+- aid: metadao:metadao-dexscreener-api
+  name: MetaDAO Dex Screener API
+  description: DexScreener HTTP adapter v1.1. Block numbers are Solana slots.
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - DexScreener
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-dexscreener-api-openapi.yml
+- aid: metadao:metadao-health-api
+  name: MetaDAO Health API
+  description: Health checks, container probes and Prometheus metrics.
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - Health
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-health-api-openapi.yml
+- aid: metadao:metadao-launches-api
+  name: MetaDAO Launches API
+  description: Launchpad raises currently accepting commitments.
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - Launches
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-launches-api-openapi.yml
+- aid: metadao:metadao-market-data-api
+  name: MetaDAO Market data API
+  description: Daily volume and fee history from the served ETL.
+  humanURL: https://api-docs.metadao.fi/introduction
+  baseURL: https://market-api.metadao.fi
+  tags:
+  - Market data
+  properties:
+  - type: OpenAPI
+    url: openapi/metadao-market-data-api-openapi.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com

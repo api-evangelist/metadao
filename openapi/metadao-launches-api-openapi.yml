@@ -1,0 +1,296 @@
+openapi: 3.2.0
+info:
+  title: Futarchy External Launches API
+  version: 2.0.0
+  description: 'Public, read-only HTTP API serving Futarchy protocol DEX data (FutarchyAMM spot markets, plus Meteora pools for daily market data) to aggregators such as CoinGecko, CoinMarketCap, DexScreener and Jupiter, and to dashboards.
+
+
+    **Versioning.** Every data endpoint is served under `/v1` (e.g. `/v1/api/tickers`) and, unchanged, at its unversioned path, which is a frozen alias of v1. Health, probe, metrics and docs endpoints are not versioned. Breaking changes ship as a new version prefix. A deprecated version answers with `Deprecation` (RFC 9745), `Sunset` (RFC 8594) and `Link: ; rel="successor-version"` headers.
+
+
+    **Units.** Token amounts, prices and volumes are in human units (already divided by the mint decimals). Most adapters serve them as decimal strings; fields suffixed `Raw` are integer strings in base units. Adapters whose consumer requires JSON numbers (CoinMarketCap, DexScreener, the Jupiter supply endpoints) serve numbers, as noted per schema.
+
+
+    **Rate limits.** Anonymous clients get 60 requests per minute per IP. Trusted partners send an `X-API-Key` header and get a higher limit; an unknown key is rejected with 401 `INVALID_API_KEY`. Rate-limited responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds); a 429 also carries `Retry-After` (seconds). Container probes (`/health/startup`, `/health/ready`, `/health/live`) are not rate limited. Limits are enforced across all replicas when the deployment shares a Redis store.
+
+
+    **Caching.** Successful data responses are sent with `Cache-Control: private, max-age=30` (client-side reuse only; responses carry per-caller rate-limit headers). Errors, health and metrics responses are `Cache-Control: no-store`. Responses over 1 KB are compressed (`br`, `gzip` or `deflate`) when the request sends `Accept-Encoding`.
+
+
+    **Serving invariant.** Infrastructure failures (Solana RPC, served database) return a 5xx. The API never answers 200 with zero, empty, or placeholder financial data because a dependency failed. Retry on 5xx; treat a 200 as authoritative.
+
+
+    **Errors.** Every error is JSON in one shape, the `Error` schema: `{ error, code, field?, requestId }`. Branch on `code` (stable), not on the `error` message (human-readable, may change); `field` names the offending parameter on a 400. Each request may take each query parameter at most once: a repeated parameter is a 400 `INVALID_QUERY_PARAMETER`. Unknown routes return 404 `NOT_FOUND`. A request that exceeds the server timeout returns 503 `REQUEST_TIMEOUT`.'
+servers:
+- url: /
+tags:
+- name: Launches
+  description: Launchpad raises currently accepting commitments.
+paths:
+  /api/launches/live:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getLiveLaunches
+      summary: Live launches
+      description: Launchpad raises currently accepting commitments, read on-chain and cached server-side (default 5 minutes; `updatedAt` is the snapshot time).
+      tags:
+      - Launches
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          description: Live launches.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlPublic'
+            RateLimit-Limit:
+              $ref: '#/components/headers/RateLimitLimit'
+            RateLimit-Remaining:
+              $ref: '#/components/headers/RateLimitRemaining'
+            RateLimit-Reset:
+              $ref: '#/components/headers/RateLimitReset'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LiveLaunchesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+components:
+  schemas:
+    Error:
+      type: object
+      description: The error body of every endpoint.
+      required:
+      - error
+      - code
+      - requestId
+      properties:
+        error:
+          type: string
+          description: Human-readable message. May change; branch on `code`.
+        code:
+          type: string
+          description: Stable machine-readable code.
+          examples:
+          - NOT_FOUND
+          - RATE_LIMITED
+          - INVALID_API_KEY
+          - INVALID_QUERY_PARAMETER
+          - INVALID_MINT_ADDRESS
+          - SERVED_DB_UNAVAILABLE
+          - SERVED_DATA_STALE
+          - REQUEST_TIMEOUT
+          - INTERNAL_ERROR
+        field:
+          type: string
+          description: 'On a 400: the request parameter that was rejected.'
+          examples:
+          - startDate
+          - id
+        requestId:
+          type: string
+          description: Request id, same as the `X-Request-Id` header.
+    LiveLaunch:
+      type: object
+      description: A launch currently accepting commitments. Amounts are in the quote mint (usually USDC).
+      required:
+      - launchAddress
+      - version
+      - tokenAddress
+      - quoteMint
+      - quoteDecimals
+      - committerCount
+      - totalCommitted
+      - totalCommittedRaw
+      - minimumRaise
+      - minimumRaiseRaw
+      - closeTime
+      - tokenName
+      - tokenSymbol
+      properties:
+        launchAddress:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Solana public key (base58).
+          examples:
+          - So11111111111111111111111111111111111111112
+        version:
+          type: string
+          enum:
+          - v0.6
+          - v0.7
+          - v0.8
+        tokenAddress:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Mint of the token being launched.
+          examples:
+          - So11111111111111111111111111111111111111112
+        quoteMint:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Solana public key (base58).
+          examples:
+          - So11111111111111111111111111111111111111112
+        quoteDecimals:
+          type: integer
+        committerCount:
+          type: integer
+          description: Funders with a non-zero commitment.
+        totalCommitted:
+          type: string
+          description: Total committed. Decimal string in human units.
+          examples:
+          - '1234.56'
+        totalCommittedRaw:
+          type: string
+          description: Total committed in base units (integer string).
+        minimumRaise:
+          type: string
+          description: Minimum raise. Decimal string in human units.
+          examples:
+          - '1234.56'
+        minimumRaiseRaw:
+          type: string
+          description: Minimum raise in base units (integer string).
+        closeTime:
+          type: integer
+          description: Unix seconds when the launch closes.
+        tokenName:
+          type:
+          - string
+          - 'null'
+          description: Metaplex name; null if metadata is missing.
+        tokenSymbol:
+          type:
+          - string
+          - 'null'
+          description: Metaplex symbol; null if metadata is missing.
+    LiveLaunchesResponse:
+      type: object
+      required:
+      - count
+      - updatedAt
+      - launches
+      properties:
+        count:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the cached snapshot was taken.
+        launches:
+          type: array
+          items:
+            $ref: '#/components/schemas/LiveLaunch'
+  responses:
+    Unauthorized:
+      description: Unknown `X-API-Key` (`INVALID_API_KEY`), or missing/invalid metrics bearer token on `/metrics`.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Unexpected server or upstream (RPC/DB) failure. Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Rate limit exceeded (`RATE_LIMITED`).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: 'Invalid request: `INVALID_MINT_ADDRESS` for a bad path address, `INVALID_QUERY_PARAMETER` for a missing, malformed or repeated query parameter. `field` names the parameter.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServiceUnavailable:
+      description: A dependency is unavailable or its data is stale (e.g. `SERVED_DB_UNAVAILABLE`, `SERVED_DATA_STALE`) or the request timed out (`REQUEST_TIMEOUT`). Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  headers:
+    XRequestId:
+      description: Request id (echoes a safe client-supplied `X-Request-Id`, otherwise a generated UUID). Quote it when reporting problems.
+      schema:
+        type: string
+    RateLimitReset:
+      description: Seconds until the current window resets.
+      schema:
+        type: integer
+    RateLimitLimit:
+      description: Requests allowed per window for this client tier.
+      schema:
+        type: integer
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema:
+        type: integer
+    CacheControlNoStore:
+      description: '`no-store` on errors, health and metrics responses.'
+      schema:
+        type: string
+        const: no-store
+    RateLimitRemaining:
+      description: Requests remaining in the current window.
+      schema:
+        type: integer
+    CacheControlPublic:
+      description: '`private, max-age=30` on successful data responses.'
+      schema:
+        type: string
+        examples:
+        - private, max-age=30
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional partner key. Requests without it are served at the anonymous rate limit (60/min per IP); a valid key gets the trusted limit; an unknown key is rejected with 401 `INVALID_API_KEY`.
+    metricsBearer:
+      type: http
+      scheme: bearer
+      description: Required on `/metrics` only when the server sets `METRICS_TOKEN`; the token is that value. When `METRICS_TOKEN` is unset, `/metrics` is open.

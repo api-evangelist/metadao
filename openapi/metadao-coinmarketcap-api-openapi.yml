@@ -1,0 +1,530 @@
+openapi: 3.2.0
+info:
+  title: Futarchy External Coin Market Cap API
+  version: 2.0.0
+  description: 'Public, read-only HTTP API serving Futarchy protocol DEX data (FutarchyAMM spot markets, plus Meteora pools for daily market data) to aggregators such as CoinGecko, CoinMarketCap, DexScreener and Jupiter, and to dashboards.
+
+
+    **Versioning.** Every data endpoint is served under `/v1` (e.g. `/v1/api/tickers`) and, unchanged, at its unversioned path, which is a frozen alias of v1. Health, probe, metrics and docs endpoints are not versioned. Breaking changes ship as a new version prefix. A deprecated version answers with `Deprecation` (RFC 9745), `Sunset` (RFC 8594) and `Link: ; rel="successor-version"` headers.
+
+
+    **Units.** Token amounts, prices and volumes are in human units (already divided by the mint decimals). Most adapters serve them as decimal strings; fields suffixed `Raw` are integer strings in base units. Adapters whose consumer requires JSON numbers (CoinMarketCap, DexScreener, the Jupiter supply endpoints) serve numbers, as noted per schema.
+
+
+    **Rate limits.** Anonymous clients get 60 requests per minute per IP. Trusted partners send an `X-API-Key` header and get a higher limit; an unknown key is rejected with 401 `INVALID_API_KEY`. Rate-limited responses carry `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` (seconds); a 429 also carries `Retry-After` (seconds). Container probes (`/health/startup`, `/health/ready`, `/health/live`) are not rate limited. Limits are enforced across all replicas when the deployment shares a Redis store.
+
+
+    **Caching.** Successful data responses are sent with `Cache-Control: private, max-age=30` (client-side reuse only; responses carry per-caller rate-limit headers). Errors, health and metrics responses are `Cache-Control: no-store`. Responses over 1 KB are compressed (`br`, `gzip` or `deflate`) when the request sends `Accept-Encoding`.
+
+
+    **Serving invariant.** Infrastructure failures (Solana RPC, served database) return a 5xx. The API never answers 200 with zero, empty, or placeholder financial data because a dependency failed. Retry on 5xx; treat a 200 as authoritative.
+
+
+    **Errors.** Every error is JSON in one shape, the `Error` schema: `{ error, code, field?, requestId }`. Branch on `code` (stable), not on the `error` message (human-readable, may change); `field` names the offending parameter on a 400. Each request may take each query parameter at most once: a repeated parameter is a 400 `INVALID_QUERY_PARAMETER`. Unknown routes return 404 `NOT_FOUND`. A request that exceeds the server timeout returns 503 `REQUEST_TIMEOUT`.'
+servers:
+- url: /
+tags:
+- name: CoinMarketCap
+  description: CoinMarketCap DEX integration [Section C] (JSON numbers). Also served under `/cmc/v1`.
+paths:
+  /cmc/summary:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getCmcSummary
+      summary: CoinMarketCap summary
+      description: '24h overview of every tradeable pair. 503 codes: `SERVED_DB_UNAVAILABLE`, `SERVED_DATA_STALE`, `CMC_ALLOWLIST_NO_MATCH`, `CMC_DUPLICATE_BASE_MINT`. 500 `CMC_MALFORMED_METRIC` when the served ETL returns a non-numeric metric.'
+      tags:
+      - CoinMarketCap
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CmcSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /cmc/ticker:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getCmcTicker
+      summary: CoinMarketCap ticker
+      description: 24h price and volume keyed by `BASE_QUOTE` (mint addresses). Same 5xx codes as `/cmc/summary`.
+      tags:
+      - CoinMarketCap
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CmcTicker'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /cmc/assets:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getCmcAssets
+      summary: CoinMarketCap assets
+      description: 'Identity of every base and quote token, keyed by mint address. On-chain metadata only (does not need the served DB). 503 codes: `CMC_ALLOWLIST_NO_MATCH`, `CMC_DUPLICATE_BASE_MINT`.'
+      tags:
+      - CoinMarketCap
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CmcAssets'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /cmc/v1/summary:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getCmcV1Summary
+      summary: CoinMarketCap summary (v1)
+      description: Versioned alias of `/cmc/summary`; same handler and response.
+      tags:
+      - CoinMarketCap
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CmcSummary'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /cmc/v1/ticker:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getCmcV1Ticker
+      summary: CoinMarketCap ticker (v1)
+      description: Versioned alias of `/cmc/ticker`; same handler and response.
+      tags:
+      - CoinMarketCap
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CmcTicker'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /cmc/v1/assets:
+    servers:
+    - url: /v1
+      description: Versioned (recommended for new integrations)
+    - url: /
+      description: Unversioned alias of v1, kept for existing integrations
+    get:
+      operationId: getCmcV1Assets
+      summary: CoinMarketCap assets (v1)
+      description: Versioned alias of `/cmc/assets`; same handler and response.
+      tags:
+      - CoinMarketCap
+      security:
+      - {}
+      - apiKey: []
+      responses:
+        '200':
+          $ref: '#/components/responses/CmcAssets'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+components:
+  headers:
+    RateLimitLimit:
+      description: Requests allowed per window for this client tier.
+      schema:
+        type: integer
+    CacheControlNoStore:
+      description: '`no-store` on errors, health and metrics responses.'
+      schema:
+        type: string
+        const: no-store
+    RateLimitReset:
+      description: Seconds until the current window resets.
+      schema:
+        type: integer
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema:
+        type: integer
+    RateLimitRemaining:
+      description: Requests remaining in the current window.
+      schema:
+        type: integer
+    CacheControlPublic:
+      description: '`private, max-age=30` on successful data responses.'
+      schema:
+        type: string
+        examples:
+        - private, max-age=30
+    XRequestId:
+      description: Request id (echoes a safe client-supplied `X-Request-Id`, otherwise a generated UUID). Quote it when reporting problems.
+      schema:
+        type: string
+  schemas:
+    CoinMarketCapAssetsResponse:
+      type: object
+      description: Object keyed by mint address.
+      additionalProperties:
+        $ref: '#/components/schemas/CoinMarketCapAsset'
+    CoinMarketCapTicker:
+      type: object
+      description: One entry in `/cmc/ticker`.
+      required:
+      - base_id
+      - quote_id
+      - base_name
+      - base_symbol
+      - quote_name
+      - quote_symbol
+      - last_price
+      - base_volume
+      - quote_volume
+      - isFrozen
+      properties:
+        base_id:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Base token mint (same key as `/cmc/assets`).
+          examples:
+          - So11111111111111111111111111111111111111112
+        quote_id:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Quote token mint.
+          examples:
+          - So11111111111111111111111111111111111111112
+        base_name:
+          type: string
+          description: Falls back to the first 8 characters of the mint.
+        base_symbol:
+          type: string
+        quote_name:
+          type: string
+        quote_symbol:
+          type: string
+        last_price:
+          type: number
+        base_volume:
+          type: number
+        quote_volume:
+          type: number
+        isFrozen:
+          type: integer
+          enum:
+          - 0
+          - 1
+          description: Always 0 for an on-chain AMM.
+    Error:
+      type: object
+      description: The error body of every endpoint.
+      required:
+      - error
+      - code
+      - requestId
+      properties:
+        error:
+          type: string
+          description: Human-readable message. May change; branch on `code`.
+        code:
+          type: string
+          description: Stable machine-readable code.
+          examples:
+          - NOT_FOUND
+          - RATE_LIMITED
+          - INVALID_API_KEY
+          - INVALID_QUERY_PARAMETER
+          - INVALID_MINT_ADDRESS
+          - SERVED_DB_UNAVAILABLE
+          - SERVED_DATA_STALE
+          - REQUEST_TIMEOUT
+          - INTERNAL_ERROR
+        field:
+          type: string
+          description: 'On a 400: the request parameter that was rejected.'
+          examples:
+          - startDate
+          - id
+        requestId:
+          type: string
+          description: Request id, same as the `X-Request-Id` header.
+    CoinMarketCapTickerResponse:
+      type: object
+      description: Object keyed by `{baseMint}_{quoteMint}`.
+      additionalProperties:
+        $ref: '#/components/schemas/CoinMarketCapTicker'
+    CoinMarketCapSummaryPair:
+      type: object
+      description: One pair in `/cmc/summary`. Prices and volumes are JSON numbers in human units.
+      required:
+      - trading_pairs
+      - base_currency
+      - quote_currency
+      - type
+      - last_price
+      - lowest_ask
+      - highest_bid
+      - base_volume
+      - quote_volume
+      properties:
+        trading_pairs:
+          type: string
+          description: '`{baseMint}_{quoteMint}`.'
+        base_currency:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Base token mint.
+          examples:
+          - So11111111111111111111111111111111111111112
+        quote_currency:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Quote token mint.
+          examples:
+          - So11111111111111111111111111111111111111112
+        type:
+          type: string
+          const: spot
+        last_price:
+          type: number
+        lowest_ask:
+          type: number
+        highest_bid:
+          type: number
+        base_volume:
+          type: number
+          description: Rolling 24h volume in the base token.
+        quote_volume:
+          type: number
+          description: Rolling 24h volume in the quote token.
+        highest_price_24h:
+          type: number
+          description: Omitted when there were no trades in 24h.
+        lowest_price_24h:
+          type: number
+          description: Omitted when there were no trades in 24h.
+        price_change_percent_24h:
+          type: number
+          description: Percent change vs the price 24h ago. Omitted for markets younger than 24h, or when the history source is unavailable.
+    CoinMarketCapAsset:
+      type: object
+      required:
+      - name
+      - symbol
+      - contractAddress
+      - can_withdraw
+      - can_deposit
+      - maker_fee
+      - taker_fee
+      properties:
+        name:
+          type: string
+          description: Falls back to the first 8 characters of the mint.
+        symbol:
+          type: string
+        contractAddress:
+          type: string
+          pattern: ^[1-9A-HJ-NP-Za-km-z]{32,44}$
+          description: Token mint.
+          examples:
+          - So11111111111111111111111111111111111111112
+        can_withdraw:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+        can_deposit:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+        maker_fee:
+          type: number
+          description: Protocol fee rate as a fraction (e.g. 0.005).
+        taker_fee:
+          type: number
+          description: Protocol fee rate as a fraction (e.g. 0.005).
+  responses:
+    ServiceUnavailable:
+      description: A dependency is unavailable or its data is stale (e.g. `SERVED_DB_UNAVAILABLE`, `SERVED_DATA_STALE`) or the request timed out (`REQUEST_TIMEOUT`). Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Rate limit exceeded (`RATE_LIMITED`).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unknown `X-API-Key` (`INVALID_API_KEY`), or missing/invalid metrics bearer token on `/metrics`.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Unexpected server or upstream (RPC/DB) failure. Retry later.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    CmcTicker:
+      description: Tickers keyed by `BASE_QUOTE` trading pair.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlPublic'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CoinMarketCapTickerResponse'
+    CmcAssets:
+      description: Assets keyed by mint address.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlPublic'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CoinMarketCapAssetsResponse'
+    CmcSummary:
+      description: Array of pair summaries.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlPublic'
+        RateLimit-Limit:
+          $ref: '#/components/headers/RateLimitLimit'
+        RateLimit-Remaining:
+          $ref: '#/components/headers/RateLimitRemaining'
+        RateLimit-Reset:
+          $ref: '#/components/headers/RateLimitReset'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/CoinMarketCapSummaryPair'
+    BadRequest:
+      description: 'Invalid request: `INVALID_MINT_ADDRESS` for a bad path address, `INVALID_QUERY_PARAMETER` for a missing, malformed or repeated query parameter. `field` names the parameter.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Optional partner key. Requests without it are served at the anonymous rate limit (60/min per IP); a valid key gets the trusted limit; an unknown key is rejected with 401 `INVALID_API_KEY`.
+    metricsBearer:
+      type: http
+      scheme: bearer
+      description: Required on `/metrics` only when the server sets `METRICS_TOKEN`; the token is that value. When `METRICS_TOKEN` is unset, `/metrics` is open.
