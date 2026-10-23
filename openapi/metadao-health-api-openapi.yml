@@ -437,3 +437,9 @@ components:
       type: http
       scheme: bearer
       description: Required on `/metrics` only when the server sets `METRICS_TOKEN`; the token is that value. When `METRICS_TOKEN` is unset, `/metrics` is open.
+x-provenance:
+  method: harvested
+  publisher: MetaDAO
+  source: https://market-api.metadao.fi/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
